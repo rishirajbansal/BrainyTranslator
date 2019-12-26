@@ -1,0 +1,20 @@
+# Nginx server configuration
+
+FROM nginx:1.17
+
+# Set Work dir globally so that it can be accessible everywhere
+ENV WORK_DIR=/usr/src/translator
+
+WORKDIR $WORK_DIR
+
+# Copy Backend folder of pyhon project to container
+COPY frontend $WORK_DIR/frontend
+
+# Copy conf file
+COPY deployment/translator_nginx.conf /etc/nginx/conf.d/
+
+#TODO: Work on volumes
+VOLUME  ["/var/log/nginx/"]
+
+# Expose the PostgreSQL port
+EXPOSE $WEB_PORT

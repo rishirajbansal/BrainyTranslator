@@ -1,0 +1,84 @@
+# Python Server API file for development
+FROM python:3.8
+
+ARG USER_NAME
+ARG USER_PWD
+ARG WORK_DIR
+
+# set environment variables
+# PYTHONDONTWRITEBYTECODE: Prevents Python from writing pyc files to disc (equivalent to python -B option)
+# PYTHONUNBUFFERED: Prevents Python from buffering stdout and stderr (equivalent to python -u option)
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Install Dependencies
+RUN apt-get update \
+    && apt-get --no-install-recommends install -y \
+        curl \
+        ca-certificates \
+        apt-transport-https \
+        lsb-release \
+        netcat \
+        # python3-pip \
+        build-essential \
+        libssl-dev \
+        libffi-dev \
+        python3-dev \
+        # Install Supervisor
+        # supervisor 
+    # Cleanup after installation
+   && apt-get clean -y \
+   && apt-get autoclean -y \
+   && apt-get autoremove -y \
+   && rm -rf /var/lib/apt/lists/*
+
+# Installing supervisor as a seperate RUN command so that it can install recommended packages as well which are disallowed in above RUN command
+RUN apt-get update && apt-get install -y supervisor
+
+# Install PIP packages
+RUN pip3 install --upgrade pip setuptools wheel
+
+# Set Work Dir, If the WORKDIR doesn’t exist, it will be created automatically
+WORKDIR ${WORK_DIR}
+
+# Create new User - Using unencrypted password/ specifying password
+RUN useradd -m ${USER_NAME} && echo "$USER_NAME:$USER_PWD" | chpasswd
+RUN gpasswd -a ${USER_NAME} sudo
+RUN chown -R ${USER_NAME} ${WORK_DIR}
+RUN chmod -R u+rX ${WORK_DIR}
+
+#USER is not required in Docker, else it throws permissions error on creating dirs
+# USER $USER_NAME
+
+# Copy Backend folder of pyhon project to container
+COPY backend ${WORK_DIR}/backend
+COPY deployment ${WORK_DIR}/deployment
+
+# -p is used to create dir only if not exists
+RUN mkdir -p ${WORK_DIR}/deployment/run
+RUN mkdir -p ${WORK_DIR}/backend/logs
+
+RUN chmod u+x ${WORK_DIR}/deployment/compose/api_setup.sh
+RUN chmod u+x ${WORK_DIR}/deployment/compose/gunicorn_start
+
+
+#COPY ./dockerfiles/supervisord.conf /etc/supervisor
+#CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+
+# RUN Local Development Server
+# Because, this image is based on Python base image, by default its started with python console therefore the following will not work
+#CMD [ "python ${WORK_DIR}/backend/Translator/manage.py runserver 0.0.0.0:8050", "--noreload" ]
+
+# Execute api setup script - which sets teh initial App environment
+#RUN ${WORK_DIR}/deployment/api_setup.sh
+
+# cd to work dir using varaible, variable substitution does not work in CMD and ENTRYPOINT
+RUN cd ${WORK_DIR}
+
+# RUN Django Dev Server
+#ENTRYPOINT ["deployment/django_server_start.sh"]
+## OR ##
+# RUN Gunicorn script
+#ENTRYPOINT ["deployment/gunicorn_start"]
+# Need to do it as entrypoint so that allow PostgreSQL service get started first
+ENTRYPOINT ["deployment/compose/api_setup.sh", "deployment/compose/gunicorn_start"]

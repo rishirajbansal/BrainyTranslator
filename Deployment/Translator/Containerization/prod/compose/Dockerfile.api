@@ -1,0 +1,55 @@
+# Python Server API file for development
+
+FROM python:3.8
+
+ARG USER_NAME
+ARG USER_PWD
+ARG WORK_DIR
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Install Dependencies
+RUN apt-get update \
+    && apt-get --no-install-recommends install -y \
+        curl \
+        ca-certificates \
+        apt-transport-https \
+        lsb-release \
+        netcat \
+        # python3-pip \
+        build-essential \
+        libssl-dev \
+        libffi-dev \
+        python3-dev \
+        # Install Supervisor
+        # supervisor 
+    # Cleanup after installation
+   && apt-get clean -y \
+   && apt-get autoclean -y \
+   && apt-get autoremove -y \
+   && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get install -y supervisor
+
+RUN pip3 install --upgrade pip setuptools wheel
+
+WORKDIR ${WORK_DIR}
+
+RUN useradd -m ${USER_NAME} && echo "$USER_NAME:$USER_PWD" | chpasswd
+RUN gpasswd -a ${USER_NAME} sudo
+RUN chown -R ${USER_NAME} ${WORK_DIR}
+RUN chmod -R u+rX ${WORK_DIR}
+
+COPY backend ${WORK_DIR}/backend
+COPY deployment ${WORK_DIR}/deployment
+
+RUN mkdir -p ${WORK_DIR}/deployment/run
+RUN mkdir -p ${WORK_DIR}/backend/logs
+
+RUN chmod u+x ${WORK_DIR}/deployment/compose/api_setup.sh
+RUN chmod u+x ${WORK_DIR}/deployment/compose/gunicorn_start
+
+RUN cd ${WORK_DIR}
+
+ENTRYPOINT ["deployment/compose/api_setup.sh", "deployment/compose/gunicorn_start"]

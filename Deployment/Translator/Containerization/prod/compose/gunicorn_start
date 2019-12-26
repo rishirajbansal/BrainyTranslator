@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -x #echo on
+
+NAME="brainy_translator"
+DIR=$WORK_DIR/backend
+WORKERS=3
+BIND=$API_SERVER_HOST:$API_SERVER_PORT
+ENV_FILE=$ENV_FILE
+DJANGO_WSGI_MODULE=Translator.wsgi
+LOG_LEVEL=debug
+ACCESS_LOG_FILE=$WORK_DIR/backend/logs/gunicorn_access.log
+ERROR_LOG_FILE=$WORK_DIR/backend/logs/gunicorn_error.log
+PROJECT_DIR=$DIR/Translator
+
+export ENV_FILE=$ENV_FILE
+
+exec gunicorn ${DJANGO_WSGI_MODULE}:application \
+    --chdir $PROJECT_DIR \
+    --name $NAME \
+    --workers $WORKERS \
+    --bind $BIND \
+    --log-level $LOG_LEVEL \
+    --access-logfile $ACCESS_LOG_FILE \
+    --error-logfile $ERROR_LOG_FILE

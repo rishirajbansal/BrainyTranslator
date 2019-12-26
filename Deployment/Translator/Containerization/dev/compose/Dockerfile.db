@@ -1,0 +1,73 @@
+# Database Server Configuration
+
+# Base Image path
+FROM python:3.8
+
+# If service specifies a build option, variables defined in environment are not automatically visible during the build.
+# Need to use the args sub-option of build to define build-time environment variables.
+# Add build arguments, which are environment variables accessible only during the build process.
+ARG APP_DB_NAME
+ARG APP_DB_USERNAME
+ARG APP_DB_PASSWORD
+
+# Install Dependencies
+RUN apt-get update \
+    && apt-get --no-install-recommends install -y \
+        ca-certificates \
+        apt-transport-https \
+        lsb-release \
+    # Cleanup after installation
+   && apt-get clean -y \
+   && apt-get autoclean -y \
+   && apt-get autoremove -y \
+   && rm -rf /var/lib/apt/lists/*
+
+# Add the PostgreSQL PGP key to verify their Debian packages.
+# It should be the same key as https://www.postgresql.org/media/keys/ACCC4CF8.asc
+RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
+
+# Add PostgreSQL's repository. It contains the most recent stable release of PostgreSQL, ``11``.
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+
+#  There are some warnings (in red) that show up during the build. You can hide
+#  them by prefixing each apt-get statement with DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+    && apt-get --no-install-recommends install -y \
+        postgresql-11 \
+        postgresql-client-11 \
+        postgresql-contrib-11 \
+        libpq-dev
+
+# Create log directory
+# RUN mkdir -p /home/postgres_log
+# RUN chown -R postgres /home/postgres_log
+# RUN chmod -R u+rX /home/postgres_log
+
+USER postgres
+
+# Create a PostgreSQL role/user with the password and then create a database owned by the that user.
+# TODO: Get the user/db name from env
+RUN /etc/init.d/postgresql start \
+    && psql --command "CREATE USER ${APP_DB_USERNAME} WITH PASSWORD '${APP_DB_PASSWORD}';" \
+    && psql --command "CREATE DATABASE ${APP_DB_NAME};" \
+    && psql --command "ALTER ROLE ${APP_DB_USERNAME} SET client_encoding TO 'utf8';" \
+    && psql --command "ALTER ROLE ${APP_DB_USERNAME} SET client_encoding TO 'utf8';" \
+    && psql --command "GRANT ALL PRIVILEGES ON DATABASE ${APP_DB_NAME} TO ${APP_DB_USERNAME};"
+    #createdb -O db_translator translator
+
+# Adjust PostgreSQL configuration so that remote connections to the database are possible.
+RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/11/main/pg_hba.conf
+
+# And add ``listen_addresses`` to ``/etc/postgresql/11/main/postgresql.conf``
+RUN echo "listen_addresses='*'" >> /etc/postgresql/11/main/postgresql.conf
+
+# Set the default command to run when starting the container
+# Start the Postgresql database
+# TRied to setup logging but its not working, its able to generate log by using this logic
+# but get failes when compose tru add it as a volume, it throws permission error
+# CMD ["/usr/lib/postgresql/11/bin/postgres", "-D", "/var/lib/postgresql/11/main", \
+#     "-c", "config_file=/etc/postgresql/11/main/postgresql.conf", \
+#     "-c", "logging_collector=on", "-c", "log_statement=all", \
+#     "-c", "log_directory=/home/postgres_log"]
+CMD ["/usr/lib/postgresql/11/bin/postgres", "-D", "/var/lib/postgresql/11/main", "-c", "config_file=/etc/postgresql/11/main/postgresql.conf"]
+

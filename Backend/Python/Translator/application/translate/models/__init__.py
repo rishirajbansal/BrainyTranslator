@@ -1,0 +1,1 @@
+from .translateDetailsData import TranslateDetails

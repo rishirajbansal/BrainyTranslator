@@ -1,0 +1,11 @@
+# Nginx server configuration
+
+FROM nginx:1.17
+
+ARG WORK_DIR
+
+WORKDIR ${WORK_DIR}
+
+COPY frontend ${WORK_DIR}/frontend
+
+COPY deployment/compose/translator_nginx.conf /etc/nginx/conf.d/

@@ -1,0 +1,33 @@
+#!/bin/bash
+
+#set -x #echo on
+
+NAME="brainy_translator"
+DIR=/home/rishi/productVentures/product/translator/backend
+USER=brainysuite
+GROUP=brainysuite
+WORKERS=3
+BIND=unix:/home/rishi/productVentures/product/translator/backend/deploy/run/gunicorn.sock
+#BIND=0.0.0.0:8050
+ENV_FILE=.env.production.local
+DJANGO_WSGI_MODULE=Translator.wsgi
+LOG_LEVEL=debug
+ACCESS_LOG_FILE=/home/rishi/productVentures/product/translator/backend/logs/gunicorn_access.log
+ERROR_LOG_FILE=/home/rishi/productVentures/product/translator/backend/logs/gunicorn_error.log
+PROJECT_DIR=$DIR/Translator
+
+cd $DIR
+source translatorenv/bin/activate
+
+export ENV_FILE=$ENV_FILE
+
+exec translatorenv/bin/gunicorn ${DJANGO_WSGI_MODULE}:application \
+    --chdir $PROJECT_DIR \
+    --name $NAME \
+    --workers $WORKERS \
+    --user $USER \
+    --group $GROUP \
+    --bind $BIND \
+    --log-level $LOG_LEVEL \
+    --access-logfile $ACCESS_LOG_FILE \
+    --error-logfile $ERROR_LOG_FILE

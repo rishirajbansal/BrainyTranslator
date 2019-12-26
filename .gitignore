@@ -1,0 +1,28 @@
+### Excluding Frontend files ###
+# Visual Studio Code workspace file
+**/*.code-workspace
+.vscode
+Frontend/Translator/dist
+Frontend/Translator/node_modules
+
+
+### Excluding Backend files ###
+
+# Python compiled files
+*.pyc
+__pycache__
+# PyCharm workspace files
+**/.idea
+**/logs
+venv
+.DS_Store
+# Excluding other files
+.env.prod*
+#prod*
+backend/Python/Translator/data/uploads/*
+
+
+### Excluding Deployment files ###
+# Visual Studio Code workspace file
+**/*.code-workspace
+.vscode

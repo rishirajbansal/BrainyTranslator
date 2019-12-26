@@ -1,0 +1,120 @@
+.
+├── backend
+│   ├── logs
+│   └── Translator
+│       ├── application
+│       │   ├── generic
+│       │   │   ├── base
+│       │   │   │   ├── abstractors
+│       │   │   │   │   └── __pycache__
+│       │   │   │   ├── business
+│       │   │   │   │   └── __pycache__
+│       │   │   │   ├── constants
+│       │   │   │   │   └── __pycache__
+│       │   │   │   ├── exception
+│       │   │   │   │   └── __pycache__
+│       │   │   │   └── __pycache__
+│       │   │   ├── domainObjects
+│       │   │   │   ├── __pycache__
+│       │   │   │   ├── requests
+│       │   │   │   │   └── __pycache__
+│       │   │   │   └── responses
+│       │   │   │       └── __pycache__
+│       │   │   ├── init
+│       │   │   │   └── __pycache__
+│       │   │   ├── integration
+│       │   │   │   ├── aws
+│       │   │   │   │   └── __pycache__
+│       │   │   │   └── __pycache__
+│       │   │   ├── loggerManager
+│       │   │   │   └── __pycache__
+│       │   │   ├── __pycache__
+│       │   │   ├── serializers
+│       │   │   │   ├── __pycache__
+│       │   │   │   ├── requestSerializers
+│       │   │   │   │   └── __pycache__
+│       │   │   │   └── responseSerializers
+│       │   │   │       └── __pycache__
+│       │   │   └── utilities
+│       │   │       └── __pycache__
+│       │   ├── __pycache__
+│       │   └── translate
+│       │       ├── business
+│       │       │   └── __pycache__
+│       │       ├── dao
+│       │       │   └── __pycache__
+│       │       ├── migrations
+│       │       │   └── __pycache__
+│       │       ├── models
+│       │       │   └── __pycache__
+│       │       ├── __pycache__
+│       │       ├── serializers_old
+│       │       │   ├── requestSerializers
+│       │       │   └── responseSerializers
+│       │       └── views
+│       │           ├── __pycache__
+│       │           ├── servicesController
+│       │           │   ├── domainObjects
+│       │           │   │   ├── __pycache__
+│       │           │   │   ├── requests
+│       │           │   │   │   └── __pycache__
+│       │           │   │   └── responses
+│       │           │   │       └── __pycache__
+│       │           │   ├── __pycache__
+│       │           │   ├── resourceHandlers
+│       │           │   │   └── __pycache__
+│       │           │   ├── serializers
+│       │           │   │   ├── __pycache__
+│       │           │   │   ├── requestSerializers
+│       │           │   │   │   └── __pycache__
+│       │           │   │   └── responseSerializers
+│       │           │   │       └── __pycache__
+│       │           │   └── utilities
+│       │           │       └── __pycache__
+│       │           └── viewsHandler
+│       │               └── __pycache__
+│       ├── config
+│       │   └── __pycache__
+│       ├── data
+│       │   └── uploads
+│       ├── envs
+│       ├── stringsBundle
+│       │   └── __pycache__
+│       └── Translator
+│           ├── __pycache__
+│           ├── settings
+│           │   └── __pycache__
+│           └── static
+│               ├── admin
+│               │   ├── css
+│               │   │   └── vendor
+│               │   │       └── select2
+│               │   ├── fonts
+│               │   ├── img
+│               │   │   └── gis
+│               │   └── js
+│               │       ├── admin
+│               │       └── vendor
+│               │           ├── jquery
+│               │           ├── select2
+│               │           │   └── i18n
+│               │           └── xregexp
+│               └── rest_framework
+│                   ├── css
+│                   ├── docs
+│                   │   ├── css
+│                   │   ├── img
+│                   │   └── js
+│                   ├── fonts
+│                   ├── img
+│                   └── js
+├── deployment
+│   └── compose
+└── frontend
+    └── translator
+        └── static
+            ├── images
+            ├── js
+            └── styles
+
+117 directories
