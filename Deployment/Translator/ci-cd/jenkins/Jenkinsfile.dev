@@ -9,7 +9,7 @@ pipeline {
     agent any
 
     environment {
-
+        env_test = "test"
     }
 
     stages {
