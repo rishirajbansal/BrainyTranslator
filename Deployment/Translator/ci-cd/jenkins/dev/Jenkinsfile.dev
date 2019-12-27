@@ -9,7 +9,7 @@ pipeline {
     agent any
 
     environment {
-
+        env_test = "test"
     }
 
     stages {
@@ -76,7 +76,7 @@ pipeline {
         }
 
         cleanup {
-            //Nothing is required here as of now
+             echo "In Post-cleanup, no cleanup required as of now."
         }
         
     }
