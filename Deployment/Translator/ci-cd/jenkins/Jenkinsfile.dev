@@ -1,0 +1,84 @@
+#!/usr/bin/env groovy
+
+def getEnvVarValue(String envVarName){
+    return sh (script: "grep '${envVarName}' env.properties|cut -d'=' -f2", returnStdout: true).trim();
+}
+
+pipeline {
+
+    agent any
+
+    environment {
+
+    }
+
+    stages {
+
+        stage('Init') {
+            steps {
+                echo "Initializing CI/CD environment..."
+
+                script {
+                    env.BASE_DIR = pwd()
+                    echo env.BASE_DIR
+                }
+
+            }
+        }
+
+        stage('pre-cleanup') {
+            steps {
+                echo "Pre Cleaning up the environment..."
+            }
+        }
+
+        stage('code-build') {
+            steps {
+                echo "Building the code binaries and other required project structure..."
+
+                sh "./init.sh"
+            }
+        }
+
+        stage('docker-build') {
+            steps {
+                echo "Building Docker images..."
+
+            }
+        }
+
+        stage('deploy') {
+            steps {
+                echo "eployment in progress..."
+
+                echo "Deployment is done."
+            }
+        }
+
+    }
+
+    post {
+
+        always {
+            echo "CI/CD process is finished."
+            echo "Build# ${env.BUILD_NUMBER} - Job: ${env.JOB_NUMBER} status is: ${currentBuild.currentResult}"
+            echo "Project Name: ${JOB_NAME} - Branch Name: ${BRANCH_NAME} - Workspace Location: ${WORKSPACE}"
+            /* clean up the workspace */
+            // deleteDir() 
+        }
+
+        success {
+            echo "CI/CD process is successfull"
+        }
+
+        failure {
+            echo "CI/CD process failed"
+        }
+
+        cleanup {
+             echo "In Post-cleanup, no cleanup required as of now."
+        }
+        
+    }
+
+}
