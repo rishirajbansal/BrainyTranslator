@@ -1,2 +1,8 @@
 #Avoid files in static folder to be consdier as tech stack language else it will take high %age in showing language bar
 **/static/* linguist-vendored
+**/Dockerfile* linguist-detectable=true
+**/Dockerfile.* linguist-language=Dockerfile
+**/docker* linguist-detectable=true
+**/docker.* linguist-language=Dockerfile
+**/Jenkins* linguist-detectable=true
+**/Jenkins.* linguist-language=Jenkinsfile
