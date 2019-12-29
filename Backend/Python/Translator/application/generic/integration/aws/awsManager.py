@@ -1,7 +1,7 @@
 import boto3
 import boto3.session
 import botocore.exceptions
-from config.awsConf import *
+import os
 import logging
 from application.generic.base.exception.businessExceptions import *
 
@@ -21,6 +21,10 @@ class AWSManager:
         boto3.set_stream_logger('boto3', logging.DEBUG)
 
     def create_session(self):
+        ACCESS_KEY = os.getenv("ACCESS_KEY") if os.getenv("ACCESS_KEY") is None else os.environ.get('ACCESS_KEY')
+        SECRET_KEY = os.getenv("SECRET_KEY") if os.getenv("SECRET_KEY") is None else os.environ.get('SECRET_KEY')
+        REGION = os.getenv("REGION") if os.getenv("REGION") is None else os.environ.get('REGION')
+
         self._aws_session = boto3.session.Session(
             aws_access_key_id=ACCESS_KEY,
             aws_secret_access_key=SECRET_KEY,

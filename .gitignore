@@ -19,7 +19,8 @@ __pycache__
 venv
 .DS_Store
 # Excluding other files
-.env.prod*
+**/.env.development.local
+**/.env.production.local
 #prod*
 backend/Python/Translator/data/uploads/*
 
