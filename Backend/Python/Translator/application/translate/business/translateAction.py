@@ -13,6 +13,7 @@ from application.translate.models.translateDetailsData import *
 from application.translate.dao.translateDAO import *
 from django.conf import settings
 from django.core.files.storage import default_storage
+from config.awsConf import *
 from config.commonConf import *
 from stringsBundle.messageStrings import *
 from application.generic.integration.aws.awsManager import *
