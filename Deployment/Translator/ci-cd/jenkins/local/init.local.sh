@@ -34,6 +34,7 @@ mkdir -p deployment/compose
 mkdir -p deployment/ci-cd
 cp -r ${WORKSPACE}/Deployment/Translator/Containerization/dev/compose/. ${WORKSPACE}/deployment/compose
 cp -r ${WORKSPACE}/Deployment/Translator/ci-cd/jenkins/local/. ${WORKSPACE}/deployment/ci-cd/
+cp -r ${WORKSPACE}/Deployment/Translator/Containerization/.dockerignore ${WORKSPACE}
 rm -rf ${WORKSPACE}/Deployment
 ls ${WORKSPACE}
 
