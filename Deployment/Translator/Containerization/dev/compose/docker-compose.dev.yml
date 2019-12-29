@@ -5,8 +5,8 @@ services:
 
   db:
     build:
-        context: ${BUILD_CONTEXT}
-        dockerfile: ${DB_DOCKERFILE}
+        context: ${BASE_PATH}/${BUILD_CONTEXT}
+        dockerfile: ${BASE_PATH}/${DB_DOCKERFILE}
         args: 
           - APP_DB_NAME=${APP_DB_NAME}
           - APP_DB_USERNAME=${APP_DB_USERNAME}
@@ -20,7 +20,7 @@ services:
     # However this file cannot substitue ENV variables in dockerfile in build time, for this need to use ARGS
     # This file substitue variables on run time
     env_file:
-      - ${ENV_FILE_LOCATION}/run.common.env
+      - ${BASE_PATH}/${ENV_FILE_LOCATION}/run.common.env
     ports: 
       - "${DB_PUBLISHED_PORT}:${DB_CONTAINER_TARGET_PORT}"
     volumes: 
@@ -29,13 +29,13 @@ services:
         source: dbdata
         target: ${DB_VOLUME_DATA_CONTAINER_TARGET_PATH}
       # Log Volume
-      - "${DB_VOLUME_LOG_HOST_SOURCE_PATH}:${DB_VOLUME_LOG_CONTAINER_TARGET_PATH}"
+      - "${BASE_PATH}/${DB_VOLUME_LOG_HOST_SOURCE_PATH}:${DB_VOLUME_LOG_CONTAINER_TARGET_PATH}"
     restart: always
 
   api:
     build: 
-      context: ${BUILD_CONTEXT}
-      dockerfile: ${API_DOCKERFILE}
+      context: ${BASE_PATH}/${BUILD_CONTEXT}
+      dockerfile: ${BASE_PATH}/${API_DOCKERFILE}
       args: 
         - USER_NAME=${USER_NAME}
         - USER_PWD=${USER_PWD}
@@ -43,39 +43,39 @@ services:
     container_name: translator-api
     # This env file is used to subsitute ENV variables on runtime when the container is created
     env_file:
-      - ${ENV_FILE_LOCATION}/run.common.env        
+      - ${BASE_PATH}/${ENV_FILE_LOCATION}/run.common.env
     ports: 
      - "${API_PUBLISHED_PORT}:${API_CONTAINER_TARGET_PORT}"
     volumes:
       # Code Base Volume
       - type: bind
-        source: ${API_VOLUME_CODEBASE_HOST_SOURCE_PATH}
+        source: ${BASE_PATH}/${API_VOLUME_CODEBASE_HOST_SOURCE_PATH}
         target: ${API_VOLUME_CODEBASE_CONTAINER_TARGET_PATH}
       # Log Volume
-      - "${API_VOLUME_LOG_HOST_SOURCE_PATH}:${API_VOLUME_LOG_CONTAINER_TARGET_PATH}"
+      - "${BASE_PATH}/${API_VOLUME_LOG_HOST_SOURCE_PATH}:${API_VOLUME_LOG_CONTAINER_TARGET_PATH}"
     restart: always
     depends_on:
       - db
 
   web:
     build: 
-      context: ${BUILD_CONTEXT}
-      dockerfile: ${WEB_DOCKERFILE}
+      context: ${BASE_PATH}/${BUILD_CONTEXT}
+      dockerfile: ${BASE_PATH}/${WEB_DOCKERFILE}
       args: 
         - WORK_DIR=${WORK_DIR}
     container_name: translator-web
       # This env file is used to subsitute ENV variables on runtime when the container is created
     env_file:
-      - ${ENV_FILE_LOCATION}/run.common.env
+      - ${BASE_PATH}/${ENV_FILE_LOCATION}/run.common.env
     ports: 
       - "${WEB_PUBLISHED_PORT}:${WEB_CONTAINER_TARGET_PORT}"
     volumes:
       # Code Base Volume
       - type: bind
-        source: ${WEB_VOLUME_CODEBASE_HOST_SOURCE_PATH}
+        source: ${BASE_PATH}/${WEB_VOLUME_CODEBASE_HOST_SOURCE_PATH}
         target: ${WEB_VOLUME_CODEBASE_CONTAINER_TARGET_PATH}
       # Log Volume
-      - ${WEB_VOLUME_LOG_HOST_SOURCE_PATH}:${WEB_VOLUME_LOG_CONTAINER_TARGET_PATH}
+      - ${BASE_PATH}/${WEB_VOLUME_LOG_HOST_SOURCE_PATH}:${WEB_VOLUME_LOG_CONTAINER_TARGET_PATH}
     restart: always
     depends_on:
       - api

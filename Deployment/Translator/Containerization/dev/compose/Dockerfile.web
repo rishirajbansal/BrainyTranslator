@@ -6,7 +6,7 @@ ARG WORK_DIR
 
 WORKDIR ${WORK_DIR}
 
-# Copy Backend folder of pyhon project to container
+# Copy frontend folder to container
 COPY frontend ${WORK_DIR}/frontend
 
 # Copy conf file

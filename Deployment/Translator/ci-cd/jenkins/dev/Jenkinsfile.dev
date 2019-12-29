@@ -18,6 +18,8 @@ pipeline {
             steps {
                 echo "Initializing CI/CD environment..."
 
+                //checkout scm;
+
                 script {
                     env.BASE_DIR = pwd()
                     echo env.BASE_DIR
@@ -36,7 +38,7 @@ pipeline {
             steps {
                 echo "Building the code binaries and other required project structure..."
 
-                sh "./init.sh"
+                sh "Deployment/Translator/ci-cd/jenkins/dev/init.sh"
             }
         }
 
