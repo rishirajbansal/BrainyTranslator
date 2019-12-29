@@ -27,6 +27,7 @@ pipeline {
 
                 //Ensure that files starting with .* also copy to the destination, use /. while copy
                 //sh "cp -r ${LOCAL_WORKSPACE}/. ${WORKSPACE}/"
+                sh "chmod u+x ${WORKSPACE}/Deployment/Translator/ci-cd/jenkins/dev/init.dev.sh"
                 sh "${WORKSPACE}/Deployment/Translator/ci-cd/jenkins/dev/init.dev.sh"
                 sh "ls -all ${WORKSPACE}"
 
