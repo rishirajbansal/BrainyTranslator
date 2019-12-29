@@ -29,7 +29,9 @@ pipeline {
                 //sh "cp -r ${LOCAL_WORKSPACE}/. ${WORKSPACE}/"
 
                 //ALlow execute permission to all sh files in Translator folder
-                sh "find Deployment/Translator -type f -iname "*.sh" -exec chmod u+x {} +"
+                sh '''
+                    find Deployment/Translator -type f -iname "*.sh" -exec chmod u+x {} +
+                '''
 
                 sh "${WORKSPACE}/Deployment/Translator/ci-cd/jenkins/dev/init.dev.sh"
                 sh "ls -all ${WORKSPACE}"
