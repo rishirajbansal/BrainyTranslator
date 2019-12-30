@@ -1,0 +1,174 @@
+#!/usr/bin/env groovy
+
+def getEnvVar(String envVarName){
+    return sh (script: "grep '${envVarName}' ${CICD_SCRIPT_LOCATION}/env.properties|cut -d'=' -f2", returnStdout: true).trim();
+}
+
+pipeline {
+
+    agent any
+
+    tools {nodejs "Nodejs-v12.13.1"}
+
+    environment {
+        CICD_SCRIPT_LOCATION = "${WORKSPACE}/deployment/ci-cd"
+
+        //Set Docker Compose file - ENV variable
+        BASE_PATH = "${WORKSPACE}"
+    }
+
+    stages {
+
+        stage('Init') {
+            steps {
+                echo "Initializing CI/CD environment..."
+
+                //ALlow execute permission to all sh files in Translator folder
+                sh '''
+                    find Deployment/Translator -type f -iname "*.sh" -exec chmod u+x {} +
+                '''
+
+                sh "${WORKSPACE}/Deployment/Translator/ci-cd/jenkins/dev/init.dev.sh"
+                sh "ls -all ${WORKSPACE}"
+
+                script {
+                    echo "Setting up the env variables..."
+
+                    env.BASE_PATH =  "${BASE_PATH}"
+                    env.DB_CONTAINER_NAME = getEnvVar('DB_CONTAINER_NAME')
+                    env.API_CONTAINER_NAME = getEnvVar('API_CONTAINER_NAME')
+                    env.WEB_CONTAINER_NAME = getEnvVar('WEB_CONTAINER_NAME')
+                    env.DB_SERVICE_NAME = getEnvVar('DB_SERVICE_NAME')
+                    env.API_SERVICE_NAME = getEnvVar('API_SERVICE_NAME')
+                    env.WEB_SERVICE_NAME = getEnvVar('WEB_SERVICE_NAME')
+                    env.DOCKER_COMPOSE_FILE = getEnvVar('DOCKER_COMPOSE_FILE')
+                    env.DOCKER_LOG_LEVEL = getEnvVar('DOCKER_LOG_LEVEL')
+                    env.DOCKER_PROJECT_NAME = getEnvVar('DOCKER_PROJECT_NAME')
+                }
+                
+            }
+        }
+
+        stage('pre-cleanup') {
+            steps {
+                echo "Pre Cleaning up the environment..."
+            }
+        }
+
+        stage('docker-cleanup') {
+            steps {
+                echo "Cleaning up the Docker images, containers..."
+
+                sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev.sh cleanup"
+            }
+        }
+
+        stage('code-build') {
+            steps {
+                echo "Building the code binaries and other required project structure..."
+
+                sh "node --version"
+                
+                dir("frontend/translator") {
+                    sh "npm install"
+                    sh "npm run build_docker_dev"
+                    sh "ls -all dist/"
+
+                    sh "npm prune"
+                    sh "rm -rf node_modules"
+                }
+                //Clear out the contents inside the frontend folder and move dist file inside frontend/translator
+                dir ("frontend"){
+                    sh "cp -r translator/. translator_tmp"
+                    sh "rm -rf translator"
+                    sh "mkdir translator"
+                    sh "cp -r translator_tmp/dist/. translator/"
+                    sh "rm -rf translator_tmp"
+                }
+
+                echo "Build done."
+            }
+        }
+
+        stage('docker-build') {
+            when {
+                allOf {
+                    expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
+                }
+            }
+
+            steps {
+                echo "Building Docker images..."
+
+                sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev.sh build"
+
+                echo "Docker images are build."
+            }
+        }
+
+        stage('deploy') {
+            when {
+                allOf {
+                    expression {currentBuild.result == null || currentBuild.result == 'SUCCESS'}
+                }
+            }
+
+            steps {
+                echo "Deployment in progress..."
+
+                sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev.sh up"
+
+                echo "Deployment is done."
+            }
+        }
+
+        stage('postdeploy') {
+
+             when {
+                allOf {
+                    expression {currentBuild.result == null || currentBuild.result == 'SUCCESS'}
+                }
+            }
+
+            steps {
+                echo "Following are the deployment details: "
+
+                sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev.sh postdeploy"
+            }
+
+        }
+
+    }
+
+    post {
+
+        always {
+            echo "CI/CD process is finished."
+
+            echo "Build NO.: ${env.BUILD_NUMBER}"
+            echo "Build ID.: ${env.BUILD_ID}"
+            //echo "Branch Name: ${BRANCH_NAME}"
+            echo "Build Status: ${currentBuild.currentResult}"
+            echo "Job Name: ${JOB_NAME}"
+            echo "Workspace Location: ${WORKSPACE}"
+            echo "Build completed in : ${currentBuild.durationString}"
+            /* clean up the workspace */
+            //Can't do this operation as now, as it is containing logs folder inside backend/logs
+            // deleteDir() 
+        }
+
+        success {
+            echo "CI/CD process is successfull"
+        }
+
+        failure {
+            echo "CI/CD process failed"
+        }
+
+        cleanup {
+             echo "In Post-cleanup, no cleanup required as of now."
+        }
+        
+    }
+
+}

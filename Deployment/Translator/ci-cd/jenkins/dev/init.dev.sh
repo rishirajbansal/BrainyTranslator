@@ -18,8 +18,8 @@ ls ${WORKSPACE}
 rm -r ${WORKSPACE}/Frontend
 ls ${WORKSPACE}
 
-# Remove previous files to flush out old files
-rm -rf backend
+# Remove previous files to flush out old files - excluding log files
+rm -rf backend/$(ls backend --ignore=logs)
 # Create backend dirs
 mkdir -p backend
 cp -r ${WORKSPACE}/Backend/Python/. ${WORKSPACE}/backend/
