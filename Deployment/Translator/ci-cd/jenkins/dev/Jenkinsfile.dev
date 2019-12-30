@@ -15,10 +15,6 @@ pipeline {
 
         //Set Docker Compose file - ENV variable
         BASE_PATH = "${WORKSPACE}"
-
-        //Set AWS keys accessibe from Python application
-        ACCESS_KEY = credentials('jenkins_aws_access_key')
-        SECRET_KEY = credentials('jenkins_aws_secret_key')
     }
 
     stages {
@@ -48,12 +44,6 @@ pipeline {
                     env.DOCKER_COMPOSE_FILE = getEnvVar('DOCKER_COMPOSE_FILE')
                     env.DOCKER_LOG_LEVEL = getEnvVar('DOCKER_LOG_LEVEL')
                     env.DOCKER_PROJECT_NAME = getEnvVar('DOCKER_PROJECT_NAME')
-
-                    //Setup AWS Keys in OS environment, Jenkins env keys are not available via OS env
-                    env.ACCESS_KEY = "${ACCESS_KEY}"
-                    env.SECRET_KEY = "${SECRET_KEY}"
-
-                    echo "${ACCESS_KEY}"
                 }
                 
             }

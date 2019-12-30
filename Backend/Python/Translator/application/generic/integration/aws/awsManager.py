@@ -24,8 +24,6 @@ class AWSManager:
         ACCESS_KEY = os.getenv("ACCESS_KEY") if os.getenv("ACCESS_KEY") is None else os.environ.get('ACCESS_KEY')
         SECRET_KEY = os.getenv("SECRET_KEY") if os.getenv("SECRET_KEY") is None else os.environ.get('SECRET_KEY')
 
-        self.logger.debug(" >>>>>>>> {}".format(os.environ.get('ACCESS_KEY')))
-
         self._aws_session = boto3.session.Session(
             aws_access_key_id=ACCESS_KEY,
             aws_secret_access_key=SECRET_KEY,
