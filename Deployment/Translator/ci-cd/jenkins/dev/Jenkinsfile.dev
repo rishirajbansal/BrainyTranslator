@@ -11,10 +11,14 @@ pipeline {
     tools {nodejs "Nodejs-v12.13.1"}
 
     environment {
-        //LOCAL_WORKSPACE = "/home/rishi/productVentures/product/translator"
         CICD_SCRIPT_LOCATION = "${WORKSPACE}/deployment/ci-cd"
+
         //Set Docker Compose file - ENV variable
         BASE_PATH = "${WORKSPACE}"
+
+        //Set AWS keys accessibe from Python application
+        ACCESS_KEY = credentials('jenkins_aws_access_key')
+        SECRET_KEY = credentials('jenkins_aws_secret_key')
     }
 
     stages {
