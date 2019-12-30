@@ -11,7 +11,6 @@ rm -rf frontend
 # Create Frontend dirs
 mkdir -p frontend
 mkdir -p frontend/translator
-#cp -r ${WORKSPACE}/Frontend/Translator/dist/* ${WORKSPACE}/frontend/translator/
 # Ensure that files starting with .* also copy to the destination, use /. while copy
 cp -r ${WORKSPACE}/Frontend/Translator/. ${WORKSPACE}/frontend/translator/
 ls ${WORKSPACE}
