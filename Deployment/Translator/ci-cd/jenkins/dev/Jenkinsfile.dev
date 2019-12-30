@@ -48,6 +48,10 @@ pipeline {
                     env.DOCKER_COMPOSE_FILE = getEnvVar('DOCKER_COMPOSE_FILE')
                     env.DOCKER_LOG_LEVEL = getEnvVar('DOCKER_LOG_LEVEL')
                     env.DOCKER_PROJECT_NAME = getEnvVar('DOCKER_PROJECT_NAME')
+
+                    //Setup AWS Keys in OS environment
+                    sh "export ACCESS_KEY=$ACCESS_KEY"
+                    sh "export SECRET_KEY=$SECRET_KEY"
                 }
                 
             }
