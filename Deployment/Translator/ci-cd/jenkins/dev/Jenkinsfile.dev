@@ -147,6 +147,7 @@ pipeline {
 
             echo "Build NO.: ${env.BUILD_NUMBER}"
             echo "Build ID.: ${env.BUILD_ID}"
+            //Branch name only accessible for Multi-Branch pipeline
             //echo "Branch Name: ${BRANCH_NAME}"
             echo "Build Status: ${currentBuild.currentResult}"
             echo "Job Name: ${JOB_NAME}"
