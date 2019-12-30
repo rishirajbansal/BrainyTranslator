@@ -159,7 +159,7 @@ pipeline {
         }
 
         success {
-            echo "CI/CD process is successfull"
+            echo "CI/CD process is successfull and application is deployed."
         }
 
         failure {
