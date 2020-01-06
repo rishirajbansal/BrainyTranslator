@@ -14,7 +14,7 @@ then
 
     ssh -i ${PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} \ 
         PRIVATE_KEY_PATH=$PRIVATE_KEY_PATH AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS CONTAINER_NAME=$DB_CONTAINER_NAME \
-        'bash -s' <<-'ENDSSH'
+        <<-'ENDSSH'
         echo 'test'
 
 ENDSSH
