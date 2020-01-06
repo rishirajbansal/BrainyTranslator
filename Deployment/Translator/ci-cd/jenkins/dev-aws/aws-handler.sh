@@ -14,15 +14,28 @@ if [ "$handler" = "stop-containers" ]
 then
 
     scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
-    ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS \
+    
+    ssh -N -i ${awsPemKey} -f ec2-user@${AWS_NAT_INSTANCE_DNS} -L *:22:${AWS_DB_INSTANCE_DNS}:22 -n AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS \
         CONTAINER_NAME=$DB_CONTAINER_NAME CICD_SCRIPT_LOCATION=$CICD_SCRIPT_LOCATION awsPemKey=${awsPemKey}\
         'sh -s' <<-'ENDSSH'
 
         echo "$CONTAINER_NAME"
-        ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_DB_INSTANCE_DNS} CONTAINER_NAME=$CONTAINER_NAME \
-            'sh -s' < docker-handler.dev-aws.sh cleanup
+        'sh -s' < docker-handler.dev-aws.sh cleanup
         
 ENDSSH
+
+
+#     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS \
+#         CONTAINER_NAME=$DB_CONTAINER_NAME CICD_SCRIPT_LOCATION=$CICD_SCRIPT_LOCATION awsPemKey=${awsPemKey}\
+#         'sh -s' <<-'ENDSSH'
+
+
+
+#         echo "$CONTAINER_NAME"
+#         ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_DB_INSTANCE_DNS} CONTAINER_NAME=$CONTAINER_NAME \
+#             'sh -s' < docker-handler.dev-aws.sh cleanup
+        
+# ENDSSH
 
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_API_INSTANCE_DNS} AWS_API_INSTANCE_DNS=${AWS_API_INSTANCE_DNS} CONTAINER_NAME=${API_CONTAINER_NAME} \
         'sh -s' < ${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh cleanup
