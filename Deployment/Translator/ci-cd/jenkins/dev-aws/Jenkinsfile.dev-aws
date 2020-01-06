@@ -110,7 +110,9 @@ pipeline {
                 sh "cp .dockerignore translator/"
 
                 // Remove all files excpet in translator
-                sh "rm -rf */$(ls --ignore=translator)"
+                sh '''
+                    rm -rf */$(ls --ignore=translator)
+                '''
 
                 echo "Build done."
             }
