@@ -12,7 +12,7 @@ if [ "$handler" = "cleanup" ]
 then
     # Stop the containers:
     docker container stop ${DB_CONTAINER_NAME}
-    echo "${DB_COTAINER_NAME} Stopped."
+    echo "${DB_CONTAINER_NAME} Stopped."
     docker container stop ${API_CONTAINER_NAME}
     echo "${API_CONTAINER_NAME} Stopped."
     docker container stop ${WEB_CONTAINER_NAME}
@@ -20,7 +20,7 @@ then
         
     # Delete preexisted containers:
     docker container rm --force ${DB_CONTAINER_NAME}
-    echo "${DB_COTAINER_NAME} Removed."
+    echo "${DB_CONTAINER_NAME} Removed."
     docker container rm --force ${API_CONTAINER_NAME}
     echo "${API_CONTAINER_NAME} Removed."
     docker container rm --force ${WEB_CONTAINER_NAME}
