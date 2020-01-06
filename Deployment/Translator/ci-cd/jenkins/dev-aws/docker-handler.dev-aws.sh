@@ -11,26 +11,36 @@ echo "Docker handler : $handler"
 if [ "$handler" = "cleanup" ] 
 then
     # Stop the containers:
+
+    ssh -i ${PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS}
+    ssh -i ${PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no ubuntu@${AWS_DB_INSTANCE_DNS}
+
     docker container stop ${DB_CONTAINER_NAME}
     echo "${DB_COTAINER_NAME} Stopped."
-    docker container stop ${API_CONTAINER_NAME}
-    echo "${API_CONTAINER_NAME} Stopped."
-    docker container stop ${WEB_CONTAINER_NAME}
-    echo "${WEB_CONTAINER_NAME} Stopped."
-        
-    # Delete preexisted containers:
     docker container rm --force ${DB_CONTAINER_NAME}
     echo "${DB_COTAINER_NAME} Removed."
-    docker container rm --force ${API_CONTAINER_NAME}
-    echo "${API_CONTAINER_NAME} Removed."
-    docker container rm --force ${WEB_CONTAINER_NAME}
-    echo "${WEB_CONTAINER_NAME} Removed."
 
     # Remove unused images
     docker rmi $(docker images -f 'dangling=true' -q) || true
-
     # Remove unused volumes
     docker volume rm $(docker volume ls -q --filter "dangling=true") || true
+    
+    exit 
+
+    
+    # docker container stop ${API_CONTAINER_NAME}
+    # echo "${API_CONTAINER_NAME} Stopped."
+    # docker container stop ${WEB_CONTAINER_NAME}
+    # echo "${WEB_CONTAINER_NAME} Stopped."
+        
+    # # Delete preexisted containers:
+    
+    # docker container rm --force ${API_CONTAINER_NAME}
+    # echo "${API_CONTAINER_NAME} Removed."
+    # docker container rm --force ${WEB_CONTAINER_NAME}
+    # echo "${WEB_CONTAINER_NAME} Removed."
+
+    
 
 elif [ "$handler" = "build" ]
 then
