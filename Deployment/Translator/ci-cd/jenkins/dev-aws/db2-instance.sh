@@ -5,7 +5,7 @@
 
 # Set the env variables
 
-exec ./env.properties.sh
+exec ./env.sh
 
 
 scp -r translator.tar.gz ubuntu@$AWS_DB_INSTANCE_DNS:/home/ubuntu

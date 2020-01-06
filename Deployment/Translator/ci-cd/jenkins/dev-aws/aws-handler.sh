@@ -14,35 +14,17 @@ if [ "$handler" = "stop-containers" ]
 then
 
 cp ${CICD_SCRIPT_LOCATION}/env.properties ${CICD_SCRIPT_LOCATION}/env.sh
-chmod u+x ${CICD_SCRIPT_LOCATION}/env.sh
-scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/db2-instance.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
-scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/env.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
+    chmod u+x ${CICD_SCRIPT_LOCATION}/env.sh
+    scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/db2-instance.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
+    scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/env.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
 
 
+ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} \
+        'sh -s' <<-'ENDSSH'
 
-#     scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
-    
-#     ssh -N -i ${awsPemKey} -f ec2-user@${AWS_NAT_INSTANCE_DNS} -L 2225:10.11.3.45:22 -n AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS \
-#         CONTAINER_NAME=$DB_CONTAINER_NAME CICD_SCRIPT_LOCATION=$CICD_SCRIPT_LOCATION awsPemKey=${awsPemKey}\
-#         'sh -s' <<-'ENDSSH'
+        bash env.sh
 
-#         echo "$CONTAINER_NAME"
-#         'sh -s' < docker-handler.dev-aws.sh cleanup
-        
-# ENDSSH
-
-
-#     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS \
-#         CONTAINER_NAME=$DB_CONTAINER_NAME CICD_SCRIPT_LOCATION=$CICD_SCRIPT_LOCATION awsPemKey=${awsPemKey}\
-#         'sh -s' <<-'ENDSSH'
-
-
-
-#         echo "$CONTAINER_NAME"
-#         ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_DB_INSTANCE_DNS} CONTAINER_NAME=$CONTAINER_NAME \
-#             'sh -s' < docker-handler.dev-aws.sh cleanup
-        
-# ENDSSH
+ENDSSH
 
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_API_INSTANCE_DNS} AWS_API_INSTANCE_DNS=${AWS_API_INSTANCE_DNS} CONTAINER_NAME=${API_CONTAINER_NAME} \
         'sh -s' < ${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh cleanup
@@ -86,20 +68,15 @@ then
     cd ${WORKSPACE}
     sudo tar -czf translator.tar.gz translator
 
-    #scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
-    #scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ubuntu@${AWS_API_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
-    #scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ubuntu@${AWS_WEB_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
+    scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
+    scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ubuntu@${AWS_API_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
+    scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ubuntu@${AWS_WEB_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
 
     # Copy script files to execute on DB instance manually
+    cp ${CICD_SCRIPT_LOCATION}/env.properties ${CICD_SCRIPT_LOCATION}/env.sh
+    chmod u+x ${CICD_SCRIPT_LOCATION}/env.sh
     scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/db2-instance.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
-    scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/env.properties ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}/env.properties.sh
-
-#     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} \
-#         'sh -s' <<-'ENDNATSSH'
-
-#         rm -rf translator
-
-# ENDNATSSH
+    scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/env.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
 
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_API_INSTANCE_DNS} \
         'sh -s' <<-'ENDNATSSH'
@@ -119,20 +96,12 @@ ENDNATSSH
 
 ENDNATSSH
 
-
-#     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS \
-#         AWS_NAT_WORKDIR=$AWS_NAT_WORKDIR AWS_DEFAULT_WORKDIR=$AWS_DEFAULT_WORKDIR  \
-#         'sh -s' <<-'ENDNATSSH'
-        
-#         echo 'Testeteeetette'
-#         scp -r $AWS_NAT_WORKDIR/translator.tar.gz ubuntu@$AWS_DB_INSTANCE_DNS:$AWS_DEFAULT_WORKDIR
-        
-# ENDNATSSH
-
 elif [ "$handler" = "build-images" ]
 then
 
     echo ""
+
+    # Execute db-instance.sh in NAT instance from SSH here
 
 
 else
