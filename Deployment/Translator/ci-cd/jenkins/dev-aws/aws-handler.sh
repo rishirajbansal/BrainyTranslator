@@ -6,6 +6,7 @@ set -x #echo on
 
 handler=$1
 
+
 echo "AWS handler : $handler"
 
 if [ "$handler" = "stop-containers" ] 
