@@ -108,6 +108,8 @@ ENDNATSSH
 elif [ "$handler" = "build-images" ]
 then
 
+    echo ""
+
 
 else
     echo "Invalid AWS Handler passed to script."
