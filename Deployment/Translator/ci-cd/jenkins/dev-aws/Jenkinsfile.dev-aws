@@ -88,7 +88,7 @@ pipeline {
                 
                 dir("frontend/translator") {
                     sh "npm install"
-                    sh "npm run build_docker_dev"
+                    sh "npm run build_aws_dev"
                     sh "ls -all dist/"
 
                     sh "npm prune"
@@ -102,6 +102,15 @@ pipeline {
                     sh "cp -r translator_tmp/dist/. translator/"
                     sh "rm -rf translator_tmp"
                 }
+
+                sh "mkdir -p translator"
+                sh "cp -r backend translator/"
+                sh "cp -r frontend translator/"
+                sh "cp -r deployment translator/"
+                sh "cp .dockerignore translator/"
+
+                // Remove all files excpet in translator
+                rm -rf */$(ls --ignore=translator)
 
                 echo "Build done."
             }
