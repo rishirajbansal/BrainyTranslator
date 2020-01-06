@@ -76,7 +76,14 @@ pipeline {
             steps {
                 echo "Cleaning up the Docker images, containers..."
 
-                sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh cleanup"
+                withCredentials(bindings: [sshUserPrivateKey(credentialsId: 'AWS_TRANSLATOR_KEY', \
+                                             keyFileVariable: 'awsPemKey')]) {
+
+                    scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/aws-handler.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
+
+                }
+
+                //sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh cleanup"
             }
         }
 
