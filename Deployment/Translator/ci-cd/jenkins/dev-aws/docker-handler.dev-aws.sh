@@ -13,8 +13,15 @@ if [ "$handler" = "cleanup" ]
 then
     # Stop the containers:
     
+    ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_API_INSTANCE_DNS} AWS_API_INSTANCE_DNS=${AWS_API_INSTANCE_DNS} CONTAINER_NAME=${API_CONTAINER_NAME} \
+        'sh -s' < ${CICD_SCRIPT_LOCATION}/aws-handler.sh stop-containers
 
-    scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/aws-handler.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
+    ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_WEB_INSTANCE_DNS} AWS_API_INSTANCE_DNS=${AWS_WEB_INSTANCE_DNS} CONTAINER_NAME=${WEB_CONTAINER_NAME} \
+        'sh -s' < ${CICD_SCRIPT_LOCATION}/aws-handler.sh stop-containers
+
+    #scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/aws-handler.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
+
+# 1st approach
 
 #     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} PRIVATE_KEY_PATH=$PRIVATE_KEY_PATH \
 #         AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS CONTAINER_NAME=$DB_CONTAINER_NAME awsPemKey=${awsPemKey}\
@@ -26,31 +33,20 @@ then
 
 # ENDSSH
 
+# 2nd approach - 
+
     # ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} PRIVATE_KEY_PATH=$PRIVATE_KEY_PATH \
     #     AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS CONTAINER_NAME=$DB_CONTAINER_NAME 'sh -s' < aws-handler.sh stop-containers true
 
-    ssh -i ${awsPemKey} -o StrictHostKeyChecking=no -o PubkeyAuthentication=no -T ec2-user@${AWS_NAT_INSTANCE_DNS} PRIVATE_KEY_PATH=$PRIVATE_KEY_PATH \
-        AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS CONTAINER_NAME=$DB_CONTAINER_NAME \
-        'sh -s' <<-'ENDNATSSH'
+# 3rd approach - 
 
-        echo "TTTTTTTTTTT"
-        bash aws-handler.sh stop-containers true
+#     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} PRIVATE_KEY_PATH=$PRIVATE_KEY_PATH \
+#         AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS CONTAINER_NAME=$DB_CONTAINER_NAME \
+#         'sh -s' <<-'ENDNATSSH'
 
-ENDNATSSH
-    
-    # docker container stop ${API_CONTAINER_NAME}
-    # echo "${API_CONTAINER_NAME} Stopped."
-    # docker container stop ${WEB_CONTAINER_NAME}
-    # echo "${WEB_CONTAINER_NAME} Stopped."
-        
-    # # Delete preexisted containers:
-    
-    # docker container rm --force ${API_CONTAINER_NAME}
-    # echo "${API_CONTAINER_NAME} Removed."
-    # docker container rm --force ${WEB_CONTAINER_NAME}
-    # echo "${WEB_CONTAINER_NAME} Removed."
+#         bash aws-handler.sh stop-containers true
 
-    
+# ENDNATSSH
 
 elif [ "$handler" = "build" ]
 then

@@ -5,21 +5,12 @@
 set -x #echo on
 
 handler=$1
-db_instance=$2
 
 echo "AWS handler : $handler"
 
 
-
-
 if [ "$handler" = "stop-containers" ] 
 then
-
-    # For DB Instance only
-    if [ "$db_instance" = "true" ]
-    then
-        ssh ubuntu@${AWS_DB_INSTANCE_DNS}
-    fi
 
     docker container stop ${CONTAINER_NAME}
     echo "${CONTAINER_NAME} Stopped."
@@ -30,13 +21,6 @@ then
     docker rmi $(docker images -f 'dangling=true' -q) || true
     # Remove unused volumes
     docker volume rm $(docker volume ls -q --filter "dangling=true") || true
-
-    # For DB Instance only
-    if [ "db_instance" = "true" ]
-    then
-        exit
-    fi
-
 
 elif [ "$handler" = "copy-project" ]
 then    
