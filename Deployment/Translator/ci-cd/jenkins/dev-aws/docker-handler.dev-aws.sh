@@ -20,9 +20,8 @@ then
         PRIVATE_KEY_PATH=$PRIVATE_KEY_PATH AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS CONTAINER_NAME=$DB_CONTAINER_NAME \
         'sh -s' <<-'ENDSSH'
 
-        echo "Teeeeeeeeeeeeeeeeeee"
         echo "$CONTAINER_NAME"
-        ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_DB_INSTANCE_DNS} CONTAINER_NAME=$CONTAINER_NAME 'bash -s' < aws-handler.sh stop-containers 
+        ssh -i $awsPemKey -o StrictHostKeyChecking=no ubuntu@${AWS_DB_INSTANCE_DNS} CONTAINER_NAME=$CONTAINER_NAME 'sh -s' < aws-handler.sh stop-containers 
         exit
 
 ENDSSH
