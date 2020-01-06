@@ -80,59 +80,59 @@ pipeline {
             }
         }
 
-        stage('code-build') {
-            steps {
-                echo "Building the code binaries and other required project structure..."
+        // stage('code-build') {
+        //     steps {
+        //         echo "Building the code binaries and other required project structure..."
 
-                sh "node --version"
+        //         sh "node --version"
                 
-                dir("frontend/translator") {
-                    sh "npm install"
-                    sh "npm run build_aws_dev"
-                    sh "ls -all dist/"
+        //         dir("frontend/translator") {
+        //             sh "npm install"
+        //             sh "npm run build_aws_dev"
+        //             sh "ls -all dist/"
 
-                    sh "npm prune"
-                    sh "rm -rf node_modules"
-                }
-                //Clear out the contents inside the frontend folder and move dist file inside frontend/translator
-                dir ("frontend"){
-                    sh "cp -r translator/. translator_tmp"
-                    sh "rm -rf translator"
-                    sh "mkdir -p translator"
-                    sh "cp -r translator_tmp/dist/. translator/"
-                    sh "rm -rf translator_tmp"
-                }
+        //             sh "npm prune"
+        //             sh "rm -rf node_modules"
+        //         }
+        //         //Clear out the contents inside the frontend folder and move dist file inside frontend/translator
+        //         dir ("frontend"){
+        //             sh "cp -r translator/. translator_tmp"
+        //             sh "rm -rf translator"
+        //             sh "mkdir -p translator"
+        //             sh "cp -r translator_tmp/dist/. translator/"
+        //             sh "rm -rf translator_tmp"
+        //         }
 
-                sh "mkdir -p translator"
-                sh "cp -r backend translator/"
-                sh "cp -r frontend translator/"
-                sh "cp -r deployment translator/"
-                sh "cp .dockerignore translator/"
+        //         sh "mkdir -p translator"
+        //         sh "cp -r backend translator/"
+        //         sh "cp -r frontend translator/"
+        //         sh "cp -r deployment translator/"
+        //         sh "cp .dockerignore translator/"
 
-                // Remove all files excpet in translator
-                // sh '''
-                //     rm -rf $(ls --ignore=translator)
-                // '''
+        //         // Remove all files excpet in translator
+        //         // sh '''
+        //         //     rm -rf $(ls --ignore=translator)
+        //         // '''
 
-                echo "Build done."
-            }
-        }
+        //         echo "Build done."
+        //     }
+        // }
 
-        stage('aws-instance-setup') {
-            when {
-                allOf {
-                    expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
-                }
-            }
+        // stage('aws-instance-setup') {
+        //     when {
+        //         allOf {
+        //             expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
+        //         }
+        //     }
 
-            steps {
-                echo "AWS Instances are being setup..."
+        //     steps {
+        //         echo "AWS Instances are being setup..."
 
-                sh "${CICD_SCRIPT_LOCATION}/aws-handler.sh copy-project"
+        //         sh "${CICD_SCRIPT_LOCATION}/aws-handler.sh copy-project"
 
-                echo "AWS instances are setup."
-            }
-        }
+        //         echo "AWS instances are setup."
+        //     }
+        // }
 
         // stage('docker-build') {
         //     when {
