@@ -13,16 +13,16 @@ echo "AWS handler : $handler"
 if [ "$handler" = "stop-containers" ] 
 then
 
-    scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
+#     scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
     
-    ssh -N -i ${awsPemKey} -f ec2-user@${AWS_NAT_INSTANCE_DNS} -L 2225:10.11.3.45:22 -n AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS \
-        CONTAINER_NAME=$DB_CONTAINER_NAME CICD_SCRIPT_LOCATION=$CICD_SCRIPT_LOCATION awsPemKey=${awsPemKey}\
-        'sh -s' <<-'ENDSSH'
+#     ssh -N -i ${awsPemKey} -f ec2-user@${AWS_NAT_INSTANCE_DNS} -L 2225:10.11.3.45:22 -n AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS \
+#         CONTAINER_NAME=$DB_CONTAINER_NAME CICD_SCRIPT_LOCATION=$CICD_SCRIPT_LOCATION awsPemKey=${awsPemKey}\
+#         'sh -s' <<-'ENDSSH'
 
-        echo "$CONTAINER_NAME"
-        'sh -s' < docker-handler.dev-aws.sh cleanup
+#         echo "$CONTAINER_NAME"
+#         'sh -s' < docker-handler.dev-aws.sh cleanup
         
-ENDSSH
+# ENDSSH
 
 
 #     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS \
@@ -83,13 +83,16 @@ then
     #scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ubuntu@${AWS_API_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
     #scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ubuntu@${AWS_WEB_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
 
-    ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} \
-        'sh -s' <<-'ENDNATSSH'
+    # Copy script files to execute on DB instance manually
+    scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/db2-instance.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
+    scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/env.properties ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}/env.properties.sh
 
-        rm -rf translator
-        tar -xf translator.tar.gz
+#     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} \
+#         'sh -s' <<-'ENDNATSSH'
 
-ENDNATSSH
+#         rm -rf translator
+
+# ENDNATSSH
 
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_API_INSTANCE_DNS} \
         'sh -s' <<-'ENDNATSSH'
