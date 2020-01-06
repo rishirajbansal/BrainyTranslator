@@ -13,6 +13,16 @@ echo "AWS handler : $handler"
 if [ "$handler" = "stop-containers" ] 
 then
 
+    ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS \
+        CONTAINER_NAME=$DB_CONTAINER_NAME CICD_SCRIPT_LOCATION=$CICD_SCRIPT_LOCATION awsPemKey=${awsPemKey}\
+        'sh -s' <<-'ENDSSH'
+
+        echo "$CONTAINER_NAME"
+        ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_DB_INSTANCE_DNS} CONTAINER_NAME=$CONTAINER_NAME \
+            'sh -s' < ${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh cleanup
+
+ENDSSH
+
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_API_INSTANCE_DNS} AWS_API_INSTANCE_DNS=${AWS_API_INSTANCE_DNS} CONTAINER_NAME=${API_CONTAINER_NAME} \
         'sh -s' < ${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh cleanup
 
@@ -52,7 +62,8 @@ elif [ "$handler" = "copy-project" ]
 then
 
     # Copy Project to NAT instance which will move project to private DB Instance
-    tar -czf translator.tar.gz ${WORKSPACE}/translator
+    cd ${WORKSPACE}
+    sudo tar -czf translator.tar.gz translator
 
     #scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
     #scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ubuntu@${AWS_API_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
@@ -93,6 +104,10 @@ ENDNATSSH
 #         scp -r $AWS_NAT_WORKDIR/translator.tar.gz ubuntu@$AWS_DB_INSTANCE_DNS:$AWS_DEFAULT_WORKDIR
         
 # ENDNATSSH
+
+elif [ "$handler" = "build-images" ]
+then
+
 
 else
     echo "Invalid AWS Handler passed to script."

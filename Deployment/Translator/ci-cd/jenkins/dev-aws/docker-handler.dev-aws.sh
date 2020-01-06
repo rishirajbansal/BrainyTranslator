@@ -22,16 +22,21 @@ then
     # Remove unused volumes
     docker volume rm $(docker volume ls -q --filter "dangling=true") || true
 
-elif [ "$handler" = "build" ]
+elif [ "$handler" = "build-db-image" ]
 then
 
     # Build DB Image
     docker build -f deployment/docker/${DB_DOCKERFILE} -t ${DB_IMAGE_TAG} ${BUILD_CONTEXT}
 
+elif [ "$handler" = "build-api-image" ]
+then
+
     # Build API Server Image
     # POSTGRESQL_HOST IP in the command is based on the Private IP of EC2 DB instance, which can change on EC2 instance shutdown/start-up. It will not change on Reboot.
     docker build -f deployment/docker/${API_DOCKERFILE} --build-arg POSTGRESQL_HOST="${POSTGRESQL_HOST}" -t ${API_IMAGE_TAG} ${BUILD_CONTEXT}
 
+elif [ "$handler" = "build-web-image" ]
+then
     #  Build Web Server Image
     docker build -f deployment/docker/${WEB_DOCKERFILE} -t ${WEB_IMAGE_TAG} ${BUILD_CONTEXT}
 
