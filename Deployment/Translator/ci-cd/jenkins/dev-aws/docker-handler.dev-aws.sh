@@ -16,9 +16,7 @@ then
         PRIVATE_KEY_PATH=$PRIVATE_KEY_PATH AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS CONTAINER_NAME=$DB_CONTAINER_NAME \
         <<-'ENDSSH'
 
-        ssh -i ${PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no ubuntu@${AWS_DB_INSTANCE_DNS} \ 
-            CONTAINER_NAME=$CONTAINER_NAME \ 
-            <<-'ENDSSH2'
+        ssh ubuntu@${AWS_DB_INSTANCE_DNS} CONTAINER_NAME=$CONTAINER_NAME <<-'ENDSSH2'
 
             docker container stop ${CONTAINER_NAME}
             echo "${CONTAINER_NAME} Stopped."
@@ -30,7 +28,7 @@ then
             # Remove unused volumes
             docker volume rm $(docker volume ls -q --filter "dangling=true") || true
 
-        ENDSSH2
+ENDSSH2
 
 ENDSSH
 
