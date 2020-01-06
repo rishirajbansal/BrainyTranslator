@@ -23,7 +23,7 @@ then
         'sh -s' <<-'ENDSSH'
 
         echo "$CONTAINER_NAME"
-        ssh ubuntu@${AWS_DB_INSTANCE_DNS} CONTAINER_NAME=$CONTAINER_NAME 'sh -s' < aws-handler.sh stop-containers 
+        ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_DB_INSTANCE_DNS} CONTAINER_NAME=$CONTAINER_NAME 'sh -s' < aws-handler.sh stop-containers 
         exit
 
 ENDSSH
