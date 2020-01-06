@@ -19,9 +19,12 @@ then
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} \
         PRIVATE_KEY_PATH=$PRIVATE_KEY_PATH AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS CONTAINER_NAME=$DB_CONTAINER_NAME \
         'sh -s' <<-'ENDSSH'
-echo "Teeeeeeeeeeeeeeeeeee"      
-ssh ubuntu@${AWS_DB_INSTANCE_DNS} CONTAINER_NAME=$CONTAINER_NAME 'bash -s' < aws-handler.sh stop-containers 
-exit
+
+        echo "Teeeeeeeeeeeeeeeeeee"
+        echo "$CONTAINER_NAME"
+        ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_DB_INSTANCE_DNS} CONTAINER_NAME=$CONTAINER_NAME 'bash -s' < aws-handler.sh stop-containers 
+        exit
+
 ENDSSH
 
     
