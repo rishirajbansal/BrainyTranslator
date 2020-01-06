@@ -79,7 +79,7 @@ pipeline {
                 withCredentials(bindings: [sshUserPrivateKey(credentialsId: 'AWS_TRANSLATOR_KEY', \
                                              keyFileVariable: 'awsPemKey')]) {
 
-                    sh "scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/aws-handler.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}""
+                    sh "scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/aws-handler.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}"
 
                 }
 
