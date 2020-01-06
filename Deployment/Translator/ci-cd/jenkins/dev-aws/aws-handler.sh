@@ -13,9 +13,9 @@ echo "AWS handler : $handler"
 if [ "$handler" = "stop-containers" ] 
 then
 
-
+cp ${CICD_SCRIPT_LOCATION}/env.properties ${CICD_SCRIPT_LOCATION}/env.sh
 scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/db2-instance.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
-    scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/env.properties ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}/env.sh
+scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/env.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
 
 
 
