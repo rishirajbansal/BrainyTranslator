@@ -11,6 +11,7 @@ echo "Docker handler : $handler"
 if [ "$handler" = "cleanup" ] 
 then
     # Stop the containers:
+    chmod 400 ${PRIVATE_KEY_PATH}
 
     scp -r -i ${PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/aws-handler.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
 
