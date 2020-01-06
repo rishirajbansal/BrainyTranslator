@@ -52,13 +52,13 @@ elif [ "$handler" = "copy-project" ]
 then
 
     # Copy Project to NAT instance which will move project to private DB Instance
-    tar -czf translator.tar.gz ${WORKSPACE}
+    tar -czf translator.tar.gz ${WORKSPACE}/translator
 
     #scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
     #scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ubuntu@${AWS_API_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
-    scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ubuntu@${AWS_WEB_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
+    #scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ubuntu@${AWS_WEB_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
 
-    ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_NAT_INSTANCE_DNS} \
+    ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} \
         'sh -s' <<-'ENDNATSSH'
 
         rm -rf translator
