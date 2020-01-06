@@ -60,6 +60,8 @@ pipeline {
                     env.AWS_NAT_WORKDIR = getEnvVar('AWS_NAT_WORKDIR')
                     env.AWS_DEFAULT_WORKDIR = getEnvVar('AWS_DEFAULT_WORKDIR')
                     env.PRIVATE_KEY_PATH = getEnvVar('PRIVATE_KEY_PATH')
+                    env.AWS_API_INSTANCE_DNS = getEnvVar('AWS_API_INSTANCE_DNS')
+                    env.AWS_WEB_INSTANCE_DNS = getEnvVar('AWS_WEB_INSTANCE_DNS')
                     
                 }
                 
