@@ -16,7 +16,7 @@ if [ "$handler" = "stop-containers" ]
 then
 
     # For DB Instance only
-    if [ "db_instance" = "true" ]
+    if [ "$db_instance" = "true" ]
     then
         ssh ubuntu@${AWS_DB_INSTANCE_DNS}
     fi
