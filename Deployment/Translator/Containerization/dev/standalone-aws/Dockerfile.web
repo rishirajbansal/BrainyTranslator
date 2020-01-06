@@ -11,10 +11,10 @@ WORKDIR $WORK_DIR
 COPY frontend $WORK_DIR/frontend
 
 # Copy conf file
-COPY deployment/translator_nginx.conf /etc/nginx/conf.d/
+COPY deployment/docker/translator_nginx.conf /etc/nginx/conf.d/
 
 #TODO: Work on volumes
-VOLUME  ["/var/log/nginx/"]
+VOLUME  ["/var/log/nginx"]
 
-# Expose the PostgreSQL port
+# Expose the Nginx port
 EXPOSE 8072
