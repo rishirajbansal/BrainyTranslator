@@ -5,6 +5,7 @@
 set -x #echo on
 
 handler=$1
+awsPemKey=$2
 
 echo "AWS handler : $handler"
 
@@ -12,32 +13,56 @@ echo "AWS handler : $handler"
 if [ "$handler" = "stop-containers" ] 
 then
 
-    docker container stop ${CONTAINER_NAME}
-    echo "${CONTAINER_NAME} Stopped."
-    docker container rm --force ${CONTAINER_NAME}
-    echo "${CONTAINER_NAME} Removed."
+    ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_API_INSTANCE_DNS} AWS_API_INSTANCE_DNS=${AWS_API_INSTANCE_DNS} CONTAINER_NAME=${API_CONTAINER_NAME} \
+        'sh -s' < ${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh cleanup
 
-    # Remove unused images
-    docker rmi $(docker images -f 'dangling=true' -q) || true
-    # Remove unused volumes
-    docker volume rm $(docker volume ls -q --filter "dangling=true") || true
+    ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_WEB_INSTANCE_DNS} AWS_API_INSTANCE_DNS=${AWS_WEB_INSTANCE_DNS} CONTAINER_NAME=${WEB_CONTAINER_NAME} \
+        'sh -s' < ${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh cleanup
+
+    #scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/aws-handler.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
+
+# 1st approach
+
+#     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} PRIVATE_KEY_PATH=$PRIVATE_KEY_PATH \
+#         AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS CONTAINER_NAME=$DB_CONTAINER_NAME awsPemKey=${awsPemKey}\
+#         'sh -s' <<-'ENDSSH'
+
+#         echo "$CONTAINER_NAME"
+#         ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_DB_INSTANCE_DNS} CONTAINER_NAME=$CONTAINER_NAME 'sh -s' < aws-handler.sh stop-containers 
+#         exit
+
+# ENDSSH
+
+# 2nd approach - 
+
+    # ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} PRIVATE_KEY_PATH=$PRIVATE_KEY_PATH \
+    #     AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS CONTAINER_NAME=$DB_CONTAINER_NAME 'sh -s' < docker-handler.dev-aws.sh cleanup
+
+# 3rd approach - 
+
+#     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} PRIVATE_KEY_PATH=$PRIVATE_KEY_PATH \
+#         AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS CONTAINER_NAME=$DB_CONTAINER_NAME \
+#         'sh -s' <<-'ENDNATSSH'
+
+#         bash docker-handler.dev-aws.sh cleanup
+
+# ENDNATSSH   
 
 elif [ "$handler" = "copy-project" ]
-then    
-    #-> Ensure that private key file is present in Linux machine and has permisstions
+then
 
     # Copy Project to NAT instance which will move project to private DB Instance
 
-   	scp -r -i ${PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no ${WORKSPACE} ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
+   	scp -r -i ${PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no ${WORKSPACE}/translator ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
 
-    ssh -i ${PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS}
+    ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS \
+        CONTAINER_NAME=$DB_CONTAINER_NAME \
+        'sh -s' <<-'ENDNATSSH'
 
-    scp -r ${AWS_NAT_WORKDIR} ubuntu@${AWS_DB_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
+        echo 'Testeteeetette'
+        scp -r ${AWS_NAT_WORKDIR} ubuntu@${AWS_DB_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
 
-    exit
-
-    # Copy Project to API instance 
-    
+ENDNATSSH   
 
 else
     echo "Invalid AWS Handler passed to script."

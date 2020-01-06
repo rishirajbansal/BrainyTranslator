@@ -81,7 +81,7 @@ pipeline {
                 withCredentials(bindings: [sshUserPrivateKey(credentialsId: 'AWS_TRANSLATOR_KEY', \
                                              keyFileVariable: 'awsPemKey')]) {
 
-                    sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh cleanup ${awsPemKey}"
+                    sh "${CICD_SCRIPT_LOCATION}/aws-handler.sh stop-containers ${awsPemKey}"
 
                 }
             }
@@ -125,21 +125,25 @@ pipeline {
             }
         }
 
-        // stage('aws-instance-setup') {
-        //     when {
-        //         allOf {
-        //             expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
-        //         }
-        //     }
+        stage('aws-instance-setup') {
+            when {
+                allOf {
+                    expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
+                }
+            }
 
-        //     steps {
-        //         echo "AWS Instances are being setup..."
+            steps {
+                echo "AWS Instances are being setup..."
 
-        //         sh "${CICD_SCRIPT_LOCATION}/aws-handler.sh copy-project"
+                withCredentials(bindings: [sshUserPrivateKey(credentialsId: 'AWS_TRANSLATOR_KEY', \
+                                             keyFileVariable: 'awsPemKey')]) {
 
-        //         echo "AWS instances are setup."
-        //     }
-        // }
+                    sh "${CICD_SCRIPT_LOCATION}/aws-handler.sh copy-project ${awsPemKey}"
+                }
+
+                echo "AWS instances are setup."
+            }
+        }
 
         // stage('docker-build') {
         //     when {

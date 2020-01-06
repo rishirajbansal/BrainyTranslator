@@ -5,7 +5,6 @@
 set -x #echo on
 
 handler=$1
-awsPemKey=$2
 
 echo "Docker handler : $handler"
 
@@ -13,40 +12,15 @@ if [ "$handler" = "cleanup" ]
 then
     # Stop the containers:
     
-    ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_API_INSTANCE_DNS} AWS_API_INSTANCE_DNS=${AWS_API_INSTANCE_DNS} CONTAINER_NAME=${API_CONTAINER_NAME} \
-        'sh -s' < ${CICD_SCRIPT_LOCATION}/aws-handler.sh stop-containers
+    docker container stop ${CONTAINER_NAME}
+    echo "${CONTAINER_NAME} Stopped."
+    docker container rm --force ${CONTAINER_NAME}
+    echo "${CONTAINER_NAME} Removed."
 
-    ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_WEB_INSTANCE_DNS} AWS_API_INSTANCE_DNS=${AWS_WEB_INSTANCE_DNS} CONTAINER_NAME=${WEB_CONTAINER_NAME} \
-        'sh -s' < ${CICD_SCRIPT_LOCATION}/aws-handler.sh stop-containers
-
-    #scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/aws-handler.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
-
-# 1st approach
-
-#     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} PRIVATE_KEY_PATH=$PRIVATE_KEY_PATH \
-#         AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS CONTAINER_NAME=$DB_CONTAINER_NAME awsPemKey=${awsPemKey}\
-#         'sh -s' <<-'ENDSSH'
-
-#         echo "$CONTAINER_NAME"
-#         ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_DB_INSTANCE_DNS} CONTAINER_NAME=$CONTAINER_NAME 'sh -s' < aws-handler.sh stop-containers 
-#         exit
-
-# ENDSSH
-
-# 2nd approach - 
-
-    # ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} PRIVATE_KEY_PATH=$PRIVATE_KEY_PATH \
-    #     AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS CONTAINER_NAME=$DB_CONTAINER_NAME 'sh -s' < aws-handler.sh stop-containers true
-
-# 3rd approach - 
-
-#     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} PRIVATE_KEY_PATH=$PRIVATE_KEY_PATH \
-#         AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS CONTAINER_NAME=$DB_CONTAINER_NAME \
-#         'sh -s' <<-'ENDNATSSH'
-
-#         bash aws-handler.sh stop-containers true
-
-# ENDNATSSH
+    # Remove unused images
+    docker rmi $(docker images -f 'dangling=true' -q) || true
+    # Remove unused volumes
+    docker volume rm $(docker volume ls -q --filter "dangling=true") || true
 
 elif [ "$handler" = "build" ]
 then
