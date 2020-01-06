@@ -56,11 +56,11 @@ then
    	scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
 
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS \
-        CONTAINER_NAME=$DB_CONTAINER_NAME \
+        AWS_NAT_WORKDIR=$AWS_NAT_WORKDIR AWS_DEFAULT_WORKDIR=$AWS_DEFAULT_WORKDIR  \
         'sh -s' <<-'ENDNATSSH'
         
         echo 'Testeteeetette'
-        scp -r ${AWS_NAT_WORKDIR} ubuntu@${AWS_DB_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
+        scp -r $AWS_NAT_WORKDIR/translator ubuntu@$AWS_DB_INSTANCE_DNS:$AWS_DEFAULT_WORKDIR
         
 ENDNATSSH
 
