@@ -14,23 +14,23 @@ then
 
     ssh -i ${PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} \
         PRIVATE_KEY_PATH=$PRIVATE_KEY_PATH AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS DB_CONTAINER_NAME=$DB_CONTAINER_NAME \ 
-        'bash -s' <<'ENDSSH'
+        'bash -s' <<-'ENDSSH'
 
-        # ssh -i ${PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no ubuntu@${AWS_DB_INSTANCE_DNS} \ 
-        #     DB_CONTAINER_NAME=$DB_CONTAINER_NAME \ 
-        #     'bash -s' <<'ENDSSH2'
+        ssh -i ${PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no ubuntu@${AWS_DB_INSTANCE_DNS} \ 
+            DB_CONTAINER_NAME=$DB_CONTAINER_NAME \ 
+            'bash -s' <<-'ENDSSH2'
 
-        #     docker container stop ${DB_CONTAINER_NAME}
-        #     echo "${DB_COTAINER_NAME} Stopped."
-        #     docker container rm --force ${DB_CONTAINER_NAME}
-        #     echo "${DB_COTAINER_NAME} Removed."
+            docker container stop ${DB_CONTAINER_NAME}
+            echo "${DB_COTAINER_NAME} Stopped."
+            docker container rm --force ${DB_CONTAINER_NAME}
+            echo "${DB_COTAINER_NAME} Removed."
 
-        #     # Remove unused images
-        #     docker rmi $(docker images -f 'dangling=true' -q) || true
-        #     # Remove unused volumes
-        #     docker volume rm $(docker volume ls -q --filter "dangling=true") || true
+            # Remove unused images
+            docker rmi $(docker images -f 'dangling=true' -q) || true
+            # Remove unused volumes
+            docker volume rm $(docker volume ls -q --filter "dangling=true") || true
 
-        # ENDSSH2
+        ENDSSH2
 
     ENDSSH
 
