@@ -24,7 +24,6 @@ then
 
 elif [ "$handler" = "build" ]
 then
-    cd ${WORKSPACE}
 
     # Build DB Image
     docker build -f deployment/docker/${DB_DOCKERFILE} -t ${DB_IMAGE_TAG} ${BUILD_CONTEXT}

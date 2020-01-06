@@ -52,11 +52,38 @@ elif [ "$handler" = "copy-project" ]
 then
 
     # Copy Project to NAT instance which will move project to private DB Instance
-    tar -czvf translator.tar.gz ${WORKSPACE}
+    tar -czf translator.tar.gz ${WORKSPACE}
 
-    scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
-    scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ubuntu@${AWS_API_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
-    scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz eubuntu@${AWS_WEB_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
+    #scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
+    #scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ubuntu@${AWS_API_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
+    scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ubuntu@${AWS_WEB_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
+
+    ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_NAT_INSTANCE_DNS} \
+        'sh -s' <<-'ENDNATSSH'
+
+        rm -rf translator
+        tar -xf translator.tar.gz
+
+ENDNATSSH
+
+    ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_API_INSTANCE_DNS} \
+        'sh -s' <<-'ENDNATSSH'
+
+        rm -rf translator
+        tar -xf translator.tar.gz
+        rm translator.tar.gz
+
+ENDNATSSH
+
+    ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_WEB_INSTANCE_DNS} \
+        'sh -s' <<-'ENDNATSSH'
+
+        rm -rf translator
+        tar -xf translator.tar.gz
+        rm translator.tar.gz
+
+ENDNATSSH
+
 
 #     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS \
 #         AWS_NAT_WORKDIR=$AWS_NAT_WORKDIR AWS_DEFAULT_WORKDIR=$AWS_DEFAULT_WORKDIR  \
