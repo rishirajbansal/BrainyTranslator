@@ -13,8 +13,6 @@ pipeline {
     environment {
         CICD_SCRIPT_LOCATION = "${WORKSPACE}/deployment/ci-cd"
 
-        //Set Docker Compose file - ENV variable
-        BASE_PATH = "${WORKSPACE}"
     }
 
     stages {
@@ -28,22 +26,41 @@ pipeline {
                     find Deployment/Translator -type f -iname "*.sh" -exec chmod u+x {} +
                 '''
 
-                sh "${WORKSPACE}/Deployment/Translator/ci-cd/jenkins/dev/init.dev.sh"
+                sh "${WORKSPACE}/Deployment/Translator/ci-cd/jenkins/dev-aws/init.dev.sh"
                 sh "ls -all ${WORKSPACE}"
 
                 script {
                     echo "Setting up the env variables..."
 
-                    env.BASE_PATH =  "${BASE_PATH}"
+                    env.WORK_DIR = getEnvVar('WORK_DIR')
                     env.DB_CONTAINER_NAME = getEnvVar('DB_CONTAINER_NAME')
                     env.API_CONTAINER_NAME = getEnvVar('API_CONTAINER_NAME')
                     env.WEB_CONTAINER_NAME = getEnvVar('WEB_CONTAINER_NAME')
-                    env.DB_SERVICE_NAME = getEnvVar('DB_SERVICE_NAME')
-                    env.API_SERVICE_NAME = getEnvVar('API_SERVICE_NAME')
-                    env.WEB_SERVICE_NAME = getEnvVar('WEB_SERVICE_NAME')
-                    env.DOCKER_COMPOSE_FILE = getEnvVar('DOCKER_COMPOSE_FILE')
-                    env.DOCKER_LOG_LEVEL = getEnvVar('DOCKER_LOG_LEVEL')
-                    env.DOCKER_PROJECT_NAME = getEnvVar('DOCKER_PROJECT_NAME')
+                    env.DOCKER_OVERLAY_NETWORK = getEnvVar('DOCKER_OVERLAY_NETWORK')
+                    env.BUILD_CONTEXT = getEnvVar('BUILD_CONTEXT')
+                    env.DB_DOCKERFILE = getEnvVar('DB_DOCKERFILE')
+                    env.API_DOCKERFILE = getEnvVar('API_DOCKERFILE')
+                    env.WEB_DOCKERFILE = getEnvVar('WEB_DOCKERFILE')
+                    env.DB_IMAGE_TAG = getEnvVar('DB_IMAGE_TAG')
+                    env.API_IMAGE_TAG = getEnvVar('API_IMAGE_TAG')
+                    env.WEB_IMAGE_TAG = getEnvVar('WEB_IMAGE_TAG')
+                    env.POSTGRESQL_HOST = getEnvVar('POSTGRESQL_HOST')
+                    env.DB_PUBLISHED_PORT = getEnvVar('DB_PUBLISHED_PORT')
+                    env.DB_CONTAINER_TARGET_PORT = getEnvVar('DB_CONTAINER_TARGET_PORT')
+                    env.API_PUBLISHED_PORT = getEnvVar('API_PUBLISHED_PORT')
+                    env.API_CONTAINER_TARGET_PORT = getEnvVar('API_CONTAINER_TARGET_PORT')
+                    env.WEB_PUBLISHED_PORT = getEnvVar('WEB_PUBLISHED_PORT')
+                    env.WEB_CONTAINER_TARGET_PORT = getEnvVar('WEB_CONTAINER_TARGET_PORT')
+                    env.AWS_WEB_IP = getEnvVar('AWS_WEB_IP')
+                    env.AWS_API_IP = getEnvVar('AWS_API_IP')
+                    env.AWS_WEB_PORT = getEnvVar('AWS_WEB_PORT')
+                    env.AWS_API_PORT = getEnvVar('AWS_API_PORT')
+                    env.AWS_NAT_INSTANCE_DNS = getEnvVar('AWS_NAT_INSTANCE_DNS')
+                    env.AWS_DB_INSTANCE_DNS = getEnvVar('AWS_DB_INSTANCE_DNS')
+                    env.AWS_NAT_WORKDIR = getEnvVar('AWS_NAT_WORKDIR')
+                    env.AWS_DEFAULT_WORKDIR = getEnvVar('AWS_DEFAULT_WORKDIR')
+                    env.PRIVATE_KEY_PATH = getEnvVar('PRIVATE_KEY_PATH')
+                    
                 }
                 
             }
@@ -59,7 +76,7 @@ pipeline {
             steps {
                 echo "Cleaning up the Docker images, containers..."
 
-                sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev.sh cleanup"
+                sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh cleanup"
             }
         }
 
@@ -90,7 +107,7 @@ pipeline {
             }
         }
 
-        stage('docker-build') {
+        stage('aws-instance-setup') {
             when {
                 allOf {
                     expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
@@ -98,45 +115,61 @@ pipeline {
             }
 
             steps {
-                echo "Building Docker images..."
+                echo "AWS Instances are being setup..."
 
-                sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev.sh build"
+                sh "${CICD_SCRIPT_LOCATION}/aws-handler.sh copy-project"
 
-                echo "Docker images are build."
+                echo "AWS instances are setup."
             }
         }
 
-        stage('deploy') {
-            when {
-                allOf {
-                    expression {currentBuild.result == null || currentBuild.result == 'SUCCESS'}
-                }
-            }
+        // stage('docker-build') {
+        //     when {
+        //         allOf {
+        //             expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
+        //         }
+        //     }
 
-            steps {
-                echo "Deployment in progress..."
+        //     steps {
+        //         echo "Building Docker images..."
 
-                sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev.sh up"
+        //         sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev.sh build"
 
-                echo "Deployment is done."
-            }
-        }
+        //         echo "Docker images are build."
+        //     }
+        // }
 
-        stage('postdeploy') {
+        // stage('deploy') {
+        //     when {
+        //         allOf {
+        //             expression {currentBuild.result == null || currentBuild.result == 'SUCCESS'}
+        //         }
+        //     }
 
-             when {
-                allOf {
-                    expression {currentBuild.result == null || currentBuild.result == 'SUCCESS'}
-                }
-            }
+        //     steps {
+        //         echo "Deployment in progress..."
 
-            steps {
-                echo "Following are the deployment details: "
+        //         sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev.sh up"
 
-                sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev.sh postdeploy"
-            }
+        //         echo "Deployment is done."
+        //     }
+        // }
 
-        }
+        // stage('postdeploy') {
+
+        //      when {
+        //         allOf {
+        //             expression {currentBuild.result == null || currentBuild.result == 'SUCCESS'}
+        //         }
+        //     }
+
+        //     steps {
+        //         echo "Following are the deployment details: "
+
+        //         sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev.sh postdeploy"
+        //     }
+
+        // }
 
     }
 
