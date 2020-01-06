@@ -26,7 +26,7 @@ pipeline {
                     find Deployment/Translator -type f -iname "*.sh" -exec chmod u+x {} +
                 '''
 
-                sh "${WORKSPACE}/Deployment/Translator/ci-cd/jenkins/dev-aws/init.dev.sh"
+                sh "${WORKSPACE}/Deployment/Translator/ci-cd/jenkins/dev-aws/init.dev-aws.sh"
                 sh "ls -all ${WORKSPACE}"
 
                 script {
@@ -72,13 +72,13 @@ pipeline {
             }
         }
 
-        stage('docker-cleanup') {
-            steps {
-                echo "Cleaning up the Docker images, containers..."
+        // stage('docker-cleanup') {
+        //     steps {
+        //         echo "Cleaning up the Docker images, containers..."
 
-                sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh cleanup"
-            }
-        }
+        //         sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh cleanup"
+        //     }
+        // }
 
         stage('code-build') {
             steps {
@@ -133,7 +133,7 @@ pipeline {
         //     steps {
         //         echo "Building Docker images..."
 
-        //         sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev.sh build"
+        //         sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh build"
 
         //         echo "Docker images are build."
         //     }
@@ -149,7 +149,7 @@ pipeline {
         //     steps {
         //         echo "Deployment in progress..."
 
-        //         sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev.sh up"
+        //         sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh up"
 
         //         echo "Deployment is done."
         //     }
@@ -166,7 +166,7 @@ pipeline {
         //     steps {
         //         echo "Following are the deployment details: "
 
-        //         sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev.sh postdeploy"
+        //         sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh postdeploy"
         //     }
 
         // }
