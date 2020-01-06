@@ -20,6 +20,16 @@ then
             CONTAINER_NAME=$CONTAINER_NAME \ 
             <<-'ENDSSH2'
 
+            docker container stop ${CONTAINER_NAME}
+            echo "${CONTAINER_NAME} Stopped."
+            docker container rm --force ${CONTAINER_NAME}
+            echo "${CONTAINER_NAME} Removed."
+
+            # Remove unused images
+            docker rmi $(docker images -f 'dangling=true' -q) || true
+            # Remove unused volumes
+            docker volume rm $(docker volume ls -q --filter "dangling=true") || true
+
         ENDSSH2
 
 ENDSSH
