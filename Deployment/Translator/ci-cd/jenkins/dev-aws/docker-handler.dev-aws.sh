@@ -34,7 +34,7 @@ then
         'sh -s' <<-'ENDNATSSH'
 
         echo "TTTTTTTTTTT"
-        bash aws-handler.sh
+        bash aws-handler.sh stop-containers true
 
 ENDNATSSH
     
