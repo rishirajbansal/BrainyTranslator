@@ -12,14 +12,14 @@ if [ "$handler" = "cleanup" ]
 then
     # Stop the containers:
 
-    scp -r -i ${PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no aws-handler.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
+    scp -r -i ${PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/aws-handler.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
 
     ssh -i ${PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} \ 
         PRIVATE_KEY_PATH=$PRIVATE_KEY_PATH AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS CONTAINER_NAME=$DB_CONTAINER_NAME \
-        'bash -s' <<-'ENDSSH'
-        
+        <<-'ENDSSH'
+echo "Teeeeeeeeeeeeeeeeeee"      
 ssh ubuntu@${AWS_DB_INSTANCE_DNS} "stop-containers" CONTAINER_NAME=$CONTAINER_NAME 'bash -s' < aws-handler.sh
-
+exit
 ENDSSH
 
     
