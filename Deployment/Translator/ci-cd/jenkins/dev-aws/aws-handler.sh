@@ -53,7 +53,7 @@ then
 
     # Copy Project to NAT instance which will move project to private DB Instance
 
-   	scp -r -i ${PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no ${WORKSPACE}/translator ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
+   	scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
 
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS \
         CONTAINER_NAME=$DB_CONTAINER_NAME \
