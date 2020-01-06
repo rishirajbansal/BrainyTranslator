@@ -58,11 +58,11 @@ then
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ec2-user@${AWS_NAT_INSTANCE_DNS} AWS_DB_INSTANCE_DNS=$AWS_DB_INSTANCE_DNS \
         CONTAINER_NAME=$DB_CONTAINER_NAME \
         'sh -s' <<-'ENDNATSSH'
-
+        
         echo 'Testeteeetette'
         scp -r ${AWS_NAT_WORKDIR} ubuntu@${AWS_DB_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
-
-ENDNATSSH   
+        
+ENDNATSSH
 
 else
     echo "Invalid AWS Handler passed to script."
