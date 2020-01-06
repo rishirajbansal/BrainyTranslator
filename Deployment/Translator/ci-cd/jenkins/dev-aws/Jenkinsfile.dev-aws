@@ -115,12 +115,7 @@ pipeline {
                 sh "cp -r frontend translator/"
                 sh "cp -r deployment translator/"
                 sh "cp .dockerignore translator/"
-
-                // Remove all files excpet in translator
-                sh '''
-                    rm -rf $(ls --ignore=translator)
-                '''
-
+                
                 echo "Build done."
             }
         }
@@ -222,7 +217,12 @@ pipeline {
         }
 
         cleanup {
-             echo "In Post-cleanup, no cleanup required as of now."
+             echo "In Post-cleanup."
+
+             // Remove all files excpet in translator
+            sh '''
+                rm -rf $(ls --ignore=translator)
+            '''
         }
         
     }
