@@ -87,106 +87,116 @@ pipeline {
             }
         }
 
-        // stage('code-build') {
-        //     steps {
-        //         echo "Building the code binaries and other required project structure..."
+        stage('code-build') {
+            steps {
+                echo "Building the code binaries and other required project structure..."
 
-        //         sh "node --version"
+                sh "node --version"
                 
-        //         dir("frontend/translator") {
-        //             sh "npm install"
-        //             sh "npm run build_aws_dev"
-        //             sh "ls -all dist/"
+                dir("frontend/translator") {
+                    sh "npm install"
+                    sh "npm run build_aws_dev"
+                    sh "ls -all dist/"
 
-        //             sh "npm prune"
-        //             sh "rm -rf node_modules"
-        //         }
-        //         //Clear out the contents inside the frontend folder and move dist file inside frontend/translator
-        //         dir ("frontend"){
-        //             sh "cp -r translator/. translator_tmp"
-        //             sh "rm -rf translator"
-        //             sh "mkdir -p translator"
-        //             sh "cp -r translator_tmp/dist/. translator/"
-        //             sh "rm -rf translator_tmp"
-        //         }
+                    sh "npm prune"
+                    sh "rm -rf node_modules"
+                }
+                //Clear out the contents inside the frontend folder and move dist file inside frontend/translator
+                dir ("frontend"){
+                    sh "cp -r translator/. translator_tmp"
+                    sh "rm -rf translator"
+                    sh "mkdir -p translator"
+                    sh "cp -r translator_tmp/dist/. translator/"
+                    sh "rm -rf translator_tmp"
+                }
 
-        //         sh "mkdir -p translator"
-        //         sh "cp -r backend translator/"
-        //         sh "cp -r frontend translator/"
-        //         sh "cp -r deployment translator/"
-        //         sh "cp .dockerignore translator/"
+                sh "mkdir -p translator"
+                sh "cp -r backend translator/"
+                sh "cp -r frontend translator/"
+                sh "cp -r deployment translator/"
+                sh "cp .dockerignore translator/"
                 
-        //         echo "Build done."
-        //     }
-        // }
+                echo "Build done."
+            }
+        }
 
-        // stage('aws-instance-setup') {
-        //     when {
-        //         allOf {
-        //             expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
-        //         }
-        //     }
+        stage('aws-instance-setup') {
+            when {
+                allOf {
+                    expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
+                }
+            }
 
-        //     steps {
-        //         echo "AWS Instances are being setup..."
+            steps {
+                echo "AWS Instances are being setup..."
 
-        //         withCredentials(bindings: [sshUserPrivateKey(credentialsId: 'AWS_TRANSLATOR_KEY', \
-        //                                      keyFileVariable: 'awsPemKey')]) {
+                withCredentials(bindings: [sshUserPrivateKey(credentialsId: 'AWS_TRANSLATOR_KEY', \
+                                             keyFileVariable: 'awsPemKey')]) {
 
-        //             sh "${CICD_SCRIPT_LOCATION}/aws-handler.sh copy-project ${awsPemKey}"
-        //         }
+                    sh "${CICD_SCRIPT_LOCATION}/aws-handler.sh copy-project ${awsPemKey}"
+                }
 
-        //         echo "AWS instances are setup."
-        //     }
-        // }
+                echo "AWS instances are setup."
+            }
+        }
 
-        // stage('docker-build') {
-        //     when {
-        //         allOf {
-        //             expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
-        //         }
-        //     }
+        // AT this moment execute script on DB manuallu //
 
-        //     steps {
-        //         echo "Building Docker images..."
+        stage('docker-build') {
+            when {
+                allOf {
+                    expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
+                }
+            }
 
-        //         sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh build"
+            steps {
+                echo "Building Docker images..."
 
-        //         echo "Docker images are build."
-        //     }
-        // }
+                withCredentials(bindings: [sshUserPrivateKey(credentialsId: 'AWS_TRANSLATOR_KEY', \
+                                             keyFileVariable: 'awsPemKey')]) {
 
-        // stage('deploy') {
-        //     when {
-        //         allOf {
-        //             expression {currentBuild.result == null || currentBuild.result == 'SUCCESS'}
-        //         }
-        //     }
+                    sh "${CICD_SCRIPT_LOCATION}/aws-handler.sh build-images ${awsPemKey}"
+                }
 
-        //     steps {
-        //         echo "Deployment in progress..."
+                echo "Docker images are build."
+            }
+        }
 
-        //         sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh up"
+        stage('deploy') {
+            when {
+                allOf {
+                    expression {currentBuild.result == null || currentBuild.result == 'SUCCESS'}
+                }
+            }
 
-        //         echo "Deployment is done."
-        //     }
-        // }
+            steps {
+                echo "Deployment in progress..."
 
-        // stage('postdeploy') {
+                withCredentials(bindings: [sshUserPrivateKey(credentialsId: 'AWS_TRANSLATOR_KEY', \
+                                             keyFileVariable: 'awsPemKey')]) {
 
-        //      when {
-        //         allOf {
-        //             expression {currentBuild.result == null || currentBuild.result == 'SUCCESS'}
-        //         }
-        //     }
+                    sh "${CICD_SCRIPT_LOCATION}/aws-handler.sh up ${awsPemKey}"
+                }
 
-        //     steps {
-        //         echo "Following are the deployment details: "
+                echo "Deployment is done."
+            }
+        }
 
-        //         sh "${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh postdeploy"
-        //     }
+        stage('postdeploy') {
 
-        // }
+             when {
+                allOf {
+                    expression {currentBuild.result == null || currentBuild.result == 'SUCCESS'}
+                }
+            }
+
+            steps {
+                echo "Following are the deployment details: "
+
+                sh "${CICD_SCRIPT_LOCATION}/aws-handler.sh postdeploy"
+            }
+
+        }
 
     }
 
@@ -219,7 +229,7 @@ pipeline {
         cleanup {
              echo "In Post-cleanup."
 
-             // Remove all files excpet in translator
+            echo "Removing all files excpet in translator"
             sh '''
                 rm -rf $(ls --ignore=translator)
             '''
