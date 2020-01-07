@@ -13,10 +13,7 @@ pipeline {
     environment {
         CICD_SCRIPT_LOCATION = "${WORKSPACE}/deployment/ci-cd"
         MANUAL_SCRIPT_EXECUTION_TIMEOUT = 15
-
     }
-
-    
 
     stages {
 
@@ -85,7 +82,6 @@ pipeline {
                                              keyFileVariable: 'awsPemKey')]) {
 
                     sh "${CICD_SCRIPT_LOCATION}/aws-handler.sh stop-containers ${awsPemKey}"
-
                 }
             }
         }
@@ -124,7 +120,7 @@ pipeline {
             }
         }
 
-        stage('aws-instance-setup') {
+        stage('aws-instances-setup') {
             when {
                 allOf {
                     expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }

@@ -13,9 +13,11 @@ echo "AWS handler : $handler"
 if [ "$handler" = "stop-containers" ] 
 then
 
+    # API Instance
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_API_INSTANCE_DNS} CONTAINER_NAME=${API_CONTAINER_NAME} \
         'sh -s' < ${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh cleanup
 
+    # WEB Instance
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_WEB_INSTANCE_DNS} CONTAINER_NAME=${WEB_CONTAINER_NAME} \
         'sh -s' < ${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh cleanup
 
@@ -52,18 +54,21 @@ then
 elif [ "$handler" = "copy-project" ]
 then
 
-    # Copy Project to NAT instance which will move project to private DB Instance
+   
     cd ${WORKSPACE}
     tar -czf translator.tar.gz translator
 
+    # Copy Project Artifacts to NAT instance which will move project to private DB Instance
     scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
+    # Copy Project Artifacts to API instance
     scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ubuntu@${AWS_API_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
+    # Copy Project Artifacts to WEB instance
     scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ubuntu@${AWS_WEB_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
 
     # Copy script files to execute on DB instance manually from NAT instance
     scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${CICD_SCRIPT_LOCATION}/db2-instance.sh ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
 
-    # Extract project artifacts on API and WEB instances
+    # Extract project artifacts on API
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_API_INSTANCE_DNS} \
         'sh -s' <<-'ENDNATSSH'
 
@@ -73,6 +78,7 @@ then
 
 ENDNATSSH
 
+    # Extract project artifacts on WEB instances
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_WEB_INSTANCE_DNS} \
         'sh -s' <<-'ENDNATSSH'
 
@@ -85,10 +91,12 @@ ENDNATSSH
 elif [ "$handler" = "build-images" ]
 then
 
+    # API Instance
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_API_INSTANCE_DNS} \
         API_DOCKERFILE=${API_DOCKERFILE} POSTGRESQL_HOST=${POSTGRESQL_HOST} API_IMAGE_TAG=${API_IMAGE_TAG} BUILD_CONTEXT=${BUILD_CONTEXT} \
         'sh -s' < ${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh build-api-image
 
+    # WEB Instance
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_WEB_INSTANCE_DNS} \
         WEB_DOCKERFILE=${WEB_DOCKERFILE} WEB_IMAGE_TAG=${WEB_IMAGE_TAG} BUILD_CONTEXT=${BUILD_CONTEXT} \
         'sh -s' < ${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh build-web-image
@@ -96,12 +104,14 @@ then
 elif [ "$handler" = "up" ]
 then
 
+    # API Instance
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_API_INSTANCE_DNS} \
         API_CONTAINER_NAME=${API_CONTAINER_NAME} DOCKER_OVERLAY_NETWORK=${DOCKER_OVERLAY_NETWORK} \
         WORK_DIR=${WORK_DIR} API_CONTAINER_TARGET_PORT=${API_CONTAINER_TARGET_PORT} API_PUBLISHED_PORT=${API_PUBLISHED_PORT} \
         API_IMAGE_TAG=${API_IMAGE_TAG} \
         'sh -s' < ${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh api-up
 
+    # WEB Instance
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_WEB_INSTANCE_DNS} \
         WEB_CONTAINER_NAME=${WEB_CONTAINER_NAME} DOCKER_OVERLAY_NETWORK=${DOCKER_OVERLAY_NETWORK} \
         WEB_PUBLISHED_PORT=${WEB_PUBLISHED_PORT} WEB_CONTAINER_TARGET_PORT=${WEB_CONTAINER_TARGET_PORT} WEB_IMAGE_TAG=${WEB_IMAGE_TAG} \

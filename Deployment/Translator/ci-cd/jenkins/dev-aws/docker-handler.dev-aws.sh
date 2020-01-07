@@ -10,7 +10,7 @@ echo "Docker handler : $handler"
 
 if [ "$handler" = "cleanup" ] 
 then
-    # Stop the containers:
+    # Stop containers:
     
     docker container stop ${CONTAINER_NAME}
     echo "${CONTAINER_NAME} Stopped."
@@ -64,5 +64,4 @@ then
 else
     echo "Invalid Docker Handler passed to script."
 fi
-
 
