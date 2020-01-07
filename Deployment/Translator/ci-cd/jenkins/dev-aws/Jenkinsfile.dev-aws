@@ -31,12 +31,11 @@ pipeline {
                             ]
                         )
 
-                        echo $USER_INPUT
                         echo "$USER_INPUT"  
                         echo "USER_INPUT['SCRIPT_EXECUTED']"
                         echo "$USER_INPUT['SCRIPT_EXECUTED']"
 
-                        if ($USER_INPUT == "No"){
+                        if ( "$USER_INPUT" == "No"){
                             echo "Operator rejected to execute the build on NAT Instance, this pipeline execution will be aborted."
                             currentBuild.result = 'ABORTED'
                             error("Operator rejected to execute the build on NAT Instance, this pipeline execution will be aborted.")
