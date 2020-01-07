@@ -110,6 +110,7 @@ pipeline {
                     sh "rm -rf translator_tmp"
                 }
 
+                sh "rm -rf translator"
                 sh "mkdir -p translator"
                 sh "cp -r backend translator/"
                 sh "cp -r frontend translator/"
@@ -195,7 +196,6 @@ pipeline {
 
                 sh "${CICD_SCRIPT_LOCATION}/aws-handler.sh postdeploy"
             }
-
         }
 
     }
@@ -232,6 +232,7 @@ pipeline {
             echo "Removing all files excpet in translator"
             sh '''
                 rm -rf $(ls --ignore=translator)
+                rm -rf .g*
             '''
         }
         
