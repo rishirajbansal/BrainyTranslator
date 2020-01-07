@@ -68,6 +68,31 @@ pipeline {
             }
         }
 
+        stage('test') {
+            when {
+                allOf {
+                    expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
+                }
+            }
+            timeout(time: 5, unit: 'SECONDS') {
+                input {
+                    message "Execute db2-instance script manually on NAT instance to build-up DB private instance."
+                    ok "Script Execution Done."
+                    parameters {
+                        choice(name: 'IN_SH_EXECUTED', choices: ['Yes', 'No'], description: 'Script Executed')
+                    }
+                }
+            }
+
+            script {
+                if ("${IN_SH_EXECUTED}" == "No"){
+                    echo "Operator rejected to execute the build on NAT Instance, this pipeline execution will be aborted."
+                    currentBuild.result = 'ABORTED'
+                    error("Operator rejected to execute the build on NAT Instance, this pipeline execution will be aborted.")
+                }
+            }
+        }
+
         stage('pre-cleanup') {
             steps {
                 echo "Pre Cleaning up the environment..."
@@ -141,7 +166,31 @@ pipeline {
             }
         }
 
-        // AT this moment execute script on DB manuallu //
+        // AT this moment execute script on DB manually //
+        stage('execute-sh-onDBInstance-manual') {
+            when {
+                allOf {
+                    expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
+                }
+            }
+            timeout(time: 5, unit: 'SECONDS') {
+                input {
+                    message "Execute db2-instance script manually on NAT instance to build-up DB private instance."
+                    ok "Script Execution Done."
+                    parameters {
+                        choice(name: 'IN_SH_EXECUTED', choices: ['Yes', 'No'], description: 'Script Executed')
+                    }
+                }
+            }
+
+            script {
+                if ("${IN_SH_EXECUTED}" == "No"){
+                    echo "Operator rejected to execute the build on NAT Instance, this pipeline execution will be aborted."
+                    currentBuild.result = 'ABORTED'
+                    error("Operator rejected to execute the build on NAT Instance, this pipeline execution will be aborted.")
+                }
+            }
+        }
 
         stage('docker-build') {
             when {

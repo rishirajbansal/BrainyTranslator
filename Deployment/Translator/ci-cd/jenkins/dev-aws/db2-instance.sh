@@ -33,8 +33,8 @@ ssh ubuntu@$AWS_DB_INSTANCE_DNS \
     DB_CONTAINER_TARGET_PORT=$DB_CONTAINER_TARGET_PORT \
     'bash -s' <<-'ENDSSH'
 
+rm -rf translator
 tar -xf translator.tar.gz
-
 rm translator.tar.gz
 
 # Stop and remove containers #
