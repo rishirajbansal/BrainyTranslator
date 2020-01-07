@@ -155,9 +155,9 @@ pipeline {
                 timeout(time: "${MANUAL_SCRIPT_EXECUTION_TIMEOUT}", unit: 'MINUTES') {
                     script {
                         def USER_INPUT = input(
-                            message: "Execute db2-instance script manually on NAT instance to build-up DB private instance. \n
-                                        Process to execute script: \n
-                                        1. Login to NAT Instance \n
+                            message: "Execute db2-instance script manually on NAT instance to build-up DB private instance. 
+                                        Process to execute script: 
+                                        1. Login to NAT Instance 
                                         2. Execute ./db-instance.sh ",
                             ok: "Script Execution Done.",
                             parameters: [
