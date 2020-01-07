@@ -59,4 +59,4 @@ docker run -dit --name $DB_CONTAINER_NAME --network $DOCKER_OVERLAY_NETWORK -p $
 ENDSSH
 
 rm translator.tar.gz
-rm db2-instance.sh
+rm db-instance.sh
