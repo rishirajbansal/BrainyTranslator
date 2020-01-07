@@ -22,7 +22,7 @@ pipeline {
 
         stage('test') {
             steps {
-                timeout(time: ${MANUAL_SCRIPT_EXECUTION_TIMEOUT}, unit: 'MINUTES') {
+                timeout(time: "${MANUAL_SCRIPT_EXECUTION_TIMEOUT}", unit: 'MINUTES') {
                     script {
                         def USER_INPUT = input(
                             message: "Execute db2-instance script manually on NAT instance to build-up DB private instance.",
