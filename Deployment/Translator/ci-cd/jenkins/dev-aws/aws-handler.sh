@@ -54,7 +54,7 @@ then
 
     # Copy Project to NAT instance which will move project to private DB Instance
     cd ${WORKSPACE}
-    sudo tar -czf translator.tar.gz translator
+    tar -czf translator.tar.gz translator
 
     scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ec2-user@${AWS_NAT_INSTANCE_DNS}:${AWS_NAT_WORKDIR}
     scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ubuntu@${AWS_API_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
@@ -112,7 +112,7 @@ then
 
     echo "Access Web Application : http://$AWS_WEB_IP:$AWS_WEB_PORT"
     echo "Access API Application : http://$AWS_API_IP:$AWS_API_PORT"
-    
+
 else
     echo "Invalid AWS Handler passed to script."
 fi
