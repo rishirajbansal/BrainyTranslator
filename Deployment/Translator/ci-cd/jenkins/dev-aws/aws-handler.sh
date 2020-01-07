@@ -102,7 +102,7 @@ then
         API_IMAGE_TAG=${API_IMAGE_TAG} \
         'sh -s' < ${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh api-up
 
-    ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_API_INSTANCE_DNS} \
+    ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_WEB_INSTANCE_DNS} \
         WEB_CONTAINER_NAME=${WEB_CONTAINER_NAME} DOCKER_OVERLAY_NETWORK=${DOCKER_OVERLAY_NETWORK} \
         WEB_PUBLISHED_PORT=${WEB_PUBLISHED_PORT} WEB_CONTAINER_TARGET_PORT=${WEB_CONTAINER_TARGET_PORT} WEB_IMAGE_TAG=${WEB_IMAGE_TAG} \
         'sh -s' < ${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh web-up
