@@ -156,6 +156,7 @@ pipeline {
                     script {
                         def USER_INPUT = input(
                             message: "Execute db2-instance script manually on NAT instance to build-up DB private instance. \
+                                        It is mandatory to run this script before resuming this pipeline as it won't work sucessfully. \
                                         Process to execute script: \
                                         1. Login to NAT Instance \
                                         2. Execute ./db-instance.sh ",
