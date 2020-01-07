@@ -12,6 +12,7 @@ pipeline {
 
     environment {
         CICD_SCRIPT_LOCATION = "${WORKSPACE}/deployment/ci-cd"
+        MANUAL_SCRIPT_EXECUTION_TIMEOUT = 15
 
     }
 
@@ -21,22 +22,18 @@ pipeline {
 
         stage('test') {
             steps {
-                timeout(time: 50, unit: 'SECONDS') {
+                timeout(time: ${MANUAL_SCRIPT_EXECUTION_TIMEOUT}, unit: 'MINUTES') {
                     script {
                         def USER_INPUT = input(
                             message: "Execute db2-instance script manually on NAT instance to build-up DB private instance.",
                             ok: "Script Execution Done.",
                             parameters: [
-                                choice(name: 'SCRIPT_EXECUTED', choices: ['Yes', 'No'], description: 'Script Executed')
+                                choice(name: 'Script Executed', choices: ['Yes', 'No'], description: 'Is Script Executed')
                             ]
                         )
 
-                        echo "$USER_INPUT"  
-                        echo "USER_INPUT['SCRIPT_EXECUTED']"
-                        echo "$USER_INPUT['SCRIPT_EXECUTED']"
-
                         if ( "$USER_INPUT" == "No"){
-                            echo "Operator rejected to execute the build on NAT Instance, this pipeline execution will be aborted."
+                            echo "---->>> Operator rejected to execute the build on NAT Instance, this pipeline execution will be aborted."
                             currentBuild.result = 'ABORTED'
                             error("Operator rejected to execute the build on NAT Instance, this pipeline execution will be aborted.")
                         }
@@ -170,32 +167,32 @@ pipeline {
         }
 
         // AT this moment execute script on DB manually //
-        // stage('execute-sh-onDBInstance-manual') {
-        //     when {
-        //         allOf {
-        //             expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
-        //         }
-        //     }
-        //     steps {
-        //         timeout(time: 5, unit: 'SECONDS') {
-        //             input {
-        //                 message "Execute db2-instance script manually on NAT instance to build-up DB private instance."
-        //                 ok "Script Execution Done."
-        //                 parameters {
-        //                     choice(name: 'IN_SH_EXECUTED', choices: ['Yes', 'No'], description: 'Script Executed')
-        //                 }
-        //             }
-        //         }
+        stage('execute-sh-onDBInstance-manual') {
+            when {
+                allOf {
+                    expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
+                }
+            }
+            steps {
+                timeout(time: ${MANUAL_SCRIPT_EXECUTION_TIMEOUT}, unit: 'MINUTES') {
+                    script {
+                        def USER_INPUT = input(
+                            message: "Execute db2-instance script manually on NAT instance to build-up DB private instance.",
+                            ok: "Script Execution Done.",
+                            parameters: [
+                                choice(name: 'Script Executed', choices: ['Yes', 'No'], description: 'Is Script Executed')
+                            ]
+                        )
 
-        //         script {
-        //             if ("${IN_SH_EXECUTED}" == "No"){
-        //                 echo "Operator rejected to execute the build on NAT Instance, this pipeline execution will be aborted."
-        //                 currentBuild.result = 'ABORTED'
-        //                 error("Operator rejected to execute the build on NAT Instance, this pipeline execution will be aborted.")
-        //             }
-        //         }
-        //     }
-        // }
+                        if ( "$USER_INPUT" == "No"){
+                            echo "---->>> Operator rejected to execute the build on NAT Instance, this pipeline execution will be aborted."
+                            currentBuild.result = 'ABORTED'
+                            error("Operator rejected to execute the build on NAT Instance, this pipeline execution will be aborted.")
+                        }
+                    }
+                }
+            }
+        }
 
         stage('docker-build') {
             when {
