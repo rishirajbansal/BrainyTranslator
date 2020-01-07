@@ -18,7 +18,7 @@ then
         'sh -s' <<-'ENDSSH'
 
         echo "$CONTAINER_NAME"
-        ssh -o StrictHostKeyChecking=no ubuntu@${AWS_DB_INSTANCE_DNS} CONTAINER_NAME=$CONTAINER_NAME 'sh -s' <<-'ENDSSH2' 
+        ssh -o StrictHostKeyChecking=no ubuntu@$AWS_DB_INSTANCE_DNS CONTAINER_NAME=$CONTAINER_NAME 'sh -s' <<-'ENDSSH2' 
 
         echo "$CONTAINER_NAME"
 ENDSSH2
