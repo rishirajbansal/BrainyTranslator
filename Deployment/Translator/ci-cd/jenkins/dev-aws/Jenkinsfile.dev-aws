@@ -13,6 +13,7 @@ pipeline {
     environment {
         CICD_SCRIPT_LOCATION = "${WORKSPACE}/deployment/ci-cd"
         MANUAL_SCRIPT_EXECUTION_TIMEOUT = 15
+        AWS_CONNECT_RETRY_ATTEMPT = 3
     }
 
     stages {
@@ -182,10 +183,13 @@ pipeline {
             steps {
                 echo "Building Docker images..."
 
-                withCredentials(bindings: [sshUserPrivateKey(credentialsId: 'AWS_TRANSLATOR_KEY', \
-                                             keyFileVariable: 'awsPemKey')]) {
+                //It is possible that sometime Jenkins fails to connect AWS EC2 instance due to network failures
+                retry("${AWS_CONNECT_RETRY_ATTEMPT}"){
+                    withCredentials(bindings: [sshUserPrivateKey(credentialsId: 'AWS_TRANSLATOR_KEY', \
+                                                keyFileVariable: 'awsPemKey')]) {
 
-                    sh "${CICD_SCRIPT_LOCATION}/aws-handler.sh build-images ${awsPemKey}"
+                        sh "${CICD_SCRIPT_LOCATION}/aws-handler.sh build-images ${awsPemKey}"
+                    }
                 }
 
                 echo "Docker images are build."
@@ -202,10 +206,13 @@ pipeline {
             steps {
                 echo "Deployment in progress..."
 
-                withCredentials(bindings: [sshUserPrivateKey(credentialsId: 'AWS_TRANSLATOR_KEY', \
-                                             keyFileVariable: 'awsPemKey')]) {
+                //It is possible that sometime Jenkins fails to connect AWS EC2 instance due to network failures
+                retry("${AWS_CONNECT_RETRY_ATTEMPT}"){
+                    withCredentials(bindings: [sshUserPrivateKey(credentialsId: 'AWS_TRANSLATOR_KEY', \
+                                                keyFileVariable: 'awsPemKey')]) {
 
-                    sh "${CICD_SCRIPT_LOCATION}/aws-handler.sh up ${awsPemKey}"
+                        sh "${CICD_SCRIPT_LOCATION}/aws-handler.sh up ${awsPemKey}"
+                    }
                 }
 
                 echo "Deployment is done."

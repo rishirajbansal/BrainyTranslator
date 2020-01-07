@@ -5,7 +5,7 @@
 
 # Set the env variables
 
-set -x #echo on
+#set -x #echo on
 
 # This DNS IP can be changed on server start-up. It will not change on Reboot.
 AWS_DB_INSTANCE_DNS=ip-10-11-3-45.ec2.internal
