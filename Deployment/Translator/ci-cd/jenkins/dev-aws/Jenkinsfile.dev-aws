@@ -31,10 +31,9 @@ pipeline {
                             ]
                         )
 
-                        echo USER_INPUT['SCRIPT_EXECUTED']
                         echo USER_INPUT.SCRIPT_EXECUTED
                         echo $USER_INPUT
-                        echo "$USER_INPUT"
+                        echo "$USER_INPUT"  
                         echo "USER_INPUT['SCRIPT_EXECUTED']"
                         echo "$USER_INPUT['SCRIPT_EXECUTED']"
 
