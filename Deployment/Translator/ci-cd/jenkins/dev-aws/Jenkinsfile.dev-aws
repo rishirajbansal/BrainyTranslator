@@ -23,21 +23,20 @@ pipeline {
             steps {
                 timeout(time: 50, unit: 'SECONDS') {
                     script {
-                        def USER_INPUT = input
+                        def USER_INPUT = input(
                             message: "Execute db2-instance script manually on NAT instance to build-up DB private instance.",
                             ok: "Script Execution Done.",
                             parameters: [
                                 choice(name: 'SCRIPT_EXECUTED', choices: ['Yes', 'No'], description: 'Script Executed')
                             ]
-                        
+                        )
 
-                        echo USER_INPUT.SCRIPT_EXECUTED
                         echo $USER_INPUT
                         echo "$USER_INPUT"  
                         echo "USER_INPUT['SCRIPT_EXECUTED']"
                         echo "$USER_INPUT['SCRIPT_EXECUTED']"
 
-                        if (USER_INPUT['SCRIPT_EXECUTED'] == "No"){
+                        if ($USER_INPUT == "No"){
                             echo "Operator rejected to execute the build on NAT Instance, this pipeline execution will be aborted."
                             currentBuild.result = 'ABORTED'
                             error("Operator rejected to execute the build on NAT Instance, this pipeline execution will be aborted.")
