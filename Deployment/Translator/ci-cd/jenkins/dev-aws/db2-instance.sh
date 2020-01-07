@@ -54,5 +54,8 @@ docker build -f deployment/docker/$DB_DOCKERFILE -t $DB_IMAGE_TAG $BUILD_CONTEXT
 
 # Create Container #
 docker run -dit --name $DB_CONTAINER_NAME --network $DOCKER_OVERLAY_NETWORK -p $DB_PUBLISHED_PORT:$DB_CONTAINER_TARGET_PORT $DB_IMAGE_TAG
+exit
+
+rm translator.tar.gz
 
 ENDSSH
