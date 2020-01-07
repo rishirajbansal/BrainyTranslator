@@ -20,28 +20,6 @@ pipeline {
 
     stages {
 
-        stage('test') {
-            steps {
-                timeout(time: "${MANUAL_SCRIPT_EXECUTION_TIMEOUT}", unit: 'MINUTES') {
-                    script {
-                        def USER_INPUT = input(
-                            message: "Execute db2-instance script manually on NAT instance to build-up DB private instance.",
-                            ok: "Script Execution Done.",
-                            parameters: [
-                                choice(name: 'Script Executed', choices: ['Yes', 'No'], description: 'Is Script Executed')
-                            ]
-                        )
-
-                        if ( "$USER_INPUT" == "No"){
-                            echo "---->>> Operator rejected to execute the build on NAT Instance, this pipeline execution will be aborted."
-                            currentBuild.result = 'ABORTED'
-                            error("Operator rejected to execute the build on NAT Instance, this pipeline execution will be aborted.")
-                        }
-                    }
-                }
-            }
-        }
-
         stage('Init') {
             steps {
                 echo "Initializing CI/CD environment..."
@@ -174,7 +152,7 @@ pipeline {
                 }
             }
             steps {
-                timeout(time: ${MANUAL_SCRIPT_EXECUTION_TIMEOUT}, unit: 'MINUTES') {
+                timeout(time: "${MANUAL_SCRIPT_EXECUTION_TIMEOUT}", unit: 'MINUTES') {
                     script {
                         def USER_INPUT = input(
                             message: "Execute db2-instance script manually on NAT instance to build-up DB private instance.",
