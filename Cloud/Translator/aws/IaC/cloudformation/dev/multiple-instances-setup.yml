@@ -1,0 +1,591 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'Translator Application AWS Cloud Infrastructure setup using mulitple instances each for individual Docker container.
+  1. Each Docker Container will run on individual EC2 instance.
+  2. DB Instance will run on Private instance
+  '
+# Metadata: 
+
+# Parameters: 
+
+# Mappings: 
+
+# Conditions: 
+
+Resources: 
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: '10.11.0.0/16'
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator-VPC'
+  SubnetPublicWeb:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: 'us-east-1a'
+      VpcId: !Ref VPC
+      CidrBlock: '10.11.1.0/24'
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator - Web Container Subnet'
+  SubnetPublicAPI:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: 'us-east-1a'
+      VpcId: !Ref VPC
+      CidrBlock: '10.11.2.0/24'
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator - API Container Subnet'
+  SubnetPrivateDB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: 'us-east-1a'
+      VpcId: !Ref VPC
+      CidrBlock: '10.11.3.0/24'
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator - DB Container Subnet'
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator - IG'
+  AttachInternetGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  SecurityGroupWebInstance:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: 'CF-Translator-WebServer-SG'
+      GroupDescription: 'SG for Web EC2 Instance'
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: '0.0.0.0/0'
+          Description: 'HTTP Web Traffic'
+        - IpProtocol: tcp
+          FromPort: '443'
+          ToPort: '443'
+          CidrIp: '0.0.0.0/0'
+          Description: 'HTTPs Web Traffic'
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: '0.0.0.0/0'
+          Description: 'Accessing EC2 Instance'
+        - IpProtocol: tcp
+          FromPort: '8050'
+          ToPort: '8050'
+          CidrIp: '0.0.0.0/0'
+          Description: 'Allowing Access to Directly access API Server'
+        - IpProtocol: tcp
+          FromPort: '8072'
+          ToPort: '8072'
+          CidrIp: '0.0.0.0/0'
+          Description: 'Allowing Access to Web Nginx Server'
+        - IpProtocol: tcp
+          FromPort: '2377'
+          ToPort: '2377'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: tcp
+          FromPort: '7946'
+          ToPort: '7946'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: udp
+          FromPort: '7946'
+          ToPort: '7946'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: udp
+          FromPort: '4789'
+          ToPort: '4789'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: '0.0.0.0/0'
+          Description: 'HTTP Web Traffic'
+        - IpProtocol: tcp
+          FromPort: '443'
+          ToPort: '443'
+          CidrIp: '0.0.0.0/0'
+          Description: 'HTTPs Web Traffic'
+        - IpProtocol: tcp
+          FromPort: '8050'
+          ToPort: '8050'
+          CidrIp: '10.11.2.0/24'  # Subnet Public API CIDR
+          Description: 'Allow outbound access to API Server'
+        - IpProtocol: tcp
+          FromPort: '2377'
+          ToPort: '2377'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: tcp
+          FromPort: '7946'
+          ToPort: '7946'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: udp
+          FromPort: '7946'
+          ToPort: '7946'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: udp
+          FromPort: '4789'
+          ToPort: '4789'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator-WebServer-SG'
+  SecurityGroupAPInstance:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: 'CF-Translator-APIServer-SG'
+      GroupDescription: 'SG for API EC2 Instance'
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: '0.0.0.0/0'
+          Description: 'HTTP Web Traffic'
+        - IpProtocol: tcp
+          FromPort: '443'
+          ToPort: '443'
+          CidrIp: '0.0.0.0/0'
+          Description: 'HTTPs Web Traffic'
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: '0.0.0.0/0'
+          Description: 'Accessing EC2 Instance'
+        - IpProtocol: tcp
+          FromPort: '8050'
+          ToPort: '8050'
+          CidrIp: '0.0.0.0/0'
+          Description: 'Allowing Access to Directly access API Server'
+        - IpProtocol: tcp
+          FromPort: '2377'
+          ToPort: '2377'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: tcp
+          FromPort: '7946'
+          ToPort: '7946'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: udp
+          FromPort: '7946'
+          ToPort: '7946'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: udp
+          FromPort: '4789'
+          ToPort: '4789'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: '0.0.0.0/0'
+          Description: 'HTTP Web Traffic'
+        - IpProtocol: tcp
+          FromPort: '443'
+          ToPort: '443'
+          CidrIp: '0.0.0.0/0'
+          Description: 'HTTPs Web Traffic'
+        - IpProtocol: tcp
+          FromPort: '5432'
+          ToPort: '5432'
+          CidrIp: '10.11.3.0/24'  # Subnet Public DB CIDR
+          Description: 'Outbound access to DB subnet'
+        - IpProtocol: tcp
+          FromPort: '2377'
+          ToPort: '2377'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: tcp
+          FromPort: '7946'
+          ToPort: '7946'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: udp
+          FromPort: '7946'
+          ToPort: '7946'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: udp
+          FromPort: '4789'
+          ToPort: '4789'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator-APIServer-SG'
+  SecurityGroupNATInstance:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: 'CF-Translator-NAT-SG'
+      GroupDescription: 'SG for NAT EC2 Instance'
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: '10.11.3.0/24'  # Subnet Public DB CIDR
+          Description: 'Allow inbound HTTP traffic from servers in the private subnet'
+        - IpProtocol: tcp
+          FromPort: '443'
+          ToPort: '443'
+          CidrIp: '10.11.3.0/24'  # Subnet Public DB CIDR
+          Description: 'Allow inbound HTTPs traffic from servers in the private subnet'
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: '0.0.0.0/0'
+          Description: 'Allow inbound SSH access to the NAT instance from home network (over the Internet gateway)'
+        - IpProtocol: tcp
+          FromPort: '5432'
+          ToPort: '5432'
+          CidrIp: '0.0.0.0/0'
+          Description: 'To allow access from outside to check PostgreSQL server from pgAdmin'
+        - IpProtocol: tcp
+          FromPort: '2377'
+          ToPort: '2377'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: tcp
+          FromPort: '7946'
+          ToPort: '7946'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: udp
+          FromPort: '7946'
+          ToPort: '7946'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: udp
+          FromPort: '4789'
+          ToPort: '4789'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: '0.0.0.0/0'
+          Description: 'Allow outbound HTTP access to the Internet'
+        - IpProtocol: tcp
+          FromPort: '443'
+          ToPort: '443'
+          CidrIp: '0.0.0.0/0'
+          Description: 'Allow outbound HTTPs access to the Internet'
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: '10.11.3.0/24'  # Subnet Public DB CIDR
+          Description: 'Allow outbound SSH access to DB Subnet'
+        - IpProtocol: tcp
+          FromPort: '5432'
+          ToPort: '5432'
+          CidrIp: '10.11.3.0/24'  # Subnet Public DB CIDR
+          Description: 'To allow access from outside to check PostgreSQL server from pgAdmin'
+        - IpProtocol: tcp
+          FromPort: '2377'
+          ToPort: '2377'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: tcp
+          FromPort: '7946'
+          ToPort: '7946'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: udp
+          FromPort: '7946'
+          ToPort: '7946'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: udp
+          FromPort: '4789'
+          ToPort: '4789'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator-NAT-SG'
+  SecurityGroupDBInstance:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: 'CF-Translator-DBServer-SG'
+      GroupDescription: 'SG for DB EC2 Instance'
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: '10.11.1.0/24'  # Subnet Public WEB/NAT CIDR
+          Description: 'Allow access to SSH only from WEB Subnet so that NAT Instance can access it'
+        - IpProtocol: tcp
+          FromPort: '5432'
+          ToPort: '5432'
+          CidrIp: '10.11.1.0/24'  # Subnet Public WEB/NAT CIDR
+          Description: 'Allow access to PostgreSQL from WEB Subnet so that NAT Instance can access it'
+        - IpProtocol: tcp
+          FromPort: '5432'
+          ToPort: '5432'
+          CidrIp: '10.11.2.0/24'  # Subnet Public API CIDR
+          Description: 'Allow access to PostgreSQL from API Subnet'
+        - IpProtocol: tcp
+          FromPort: '2377'
+          ToPort: '2377'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: tcp
+          FromPort: '7946'
+          ToPort: '7946'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: udp
+          FromPort: '7946'
+          ToPort: '7946'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: udp
+          FromPort: '4789'
+          ToPort: '4789'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: '0.0.0.0/0'
+          Description: 'For Software installs and updates'
+        - IpProtocol: tcp
+          FromPort: '443'
+          ToPort: '443'
+          CidrIp: '0.0.0.0/0'
+          Description: 'For Software installs and updates'
+        - IpProtocol: tcp
+          FromPort: '2377'
+          ToPort: '2377'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: tcp
+          FromPort: '7946'
+          ToPort: '7946'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: udp
+          FromPort: '7946'
+          ToPort: '7946'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+        - IpProtocol: udp
+          FromPort: '4789'
+          ToPort: '4789'
+          CidrIp: !GetAtt VPC.CidrBlock
+          Description: 'Docker Port for Overlay Network'
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator-DBServer-SG'
+  RouteTablePublicSubnet:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator-Public Subnet-RT'
+  RoutePublicSubnetToInternetGateway:
+    Type: AWS::EC2::Route
+    DependsOn: AttachInternetGateway
+    Properties:
+      RouteTableId: !Ref RouteTablePublicSubnet
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref InternetGateway
+  RouteTableSubnetAssociationWeb:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      SubnetId: !Ref SubnetPublicWeb    # This subnet Contains Web and NAT Instance
+      RouteTableId: !Ref RouteTablePublicSubnet
+  RouteTableSubnetAssociationAPI:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      SubnetId: !Ref SubnetPublicAPI
+      RouteTableId: !Ref RouteTablePublicSubnet
+  RouteTablePrivateSubnet:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator-Private Subnet-RT'
+  RoutePrivateSubnetToNATInstance:
+    Type: AWS::EC2::Route
+    DependsOn: NATEC2Instance
+    Properties:
+      RouteTableId: !Ref RouteTablePrivateSubnet
+      DestinationCidrBlock: '0.0.0.0/0'
+      InstanceId: !Ref NATEC2Instance
+  RouteTableSubnetAssociationDB:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      SubnetId: !Ref SubnetPrivateDB
+      RouteTableId: !Ref RouteTablePrivateSubnet
+  WebEC2Instance:
+    Type: AWS::EC2::Instance
+    DependsOn: AttachInternetGateway    # If using 'NetworkInterfaces' then it is required to add
+    Properties:
+      KeyName: 'TranslatorKey'
+      ImageId: 'ami-04b9e92b5572fa0d1'
+      InstanceType: 't2.micro'
+      NetworkInterfaces: 
+      - AssociatePublicIpAddress: 'true'
+        DeleteOnTermination: 'true'
+        SubnetId: !Ref SubnetPublicWeb
+        DeviceIndex: '0'
+        GroupSet:
+          - !Ref SecurityGroupWebInstance
+      IamInstanceProfile: 'TranslatorRole'
+      BlockDeviceMappings: 
+      - DeviceName: /dev/xvda
+        Ebs:
+          DeleteOnTermination: 'true'
+          VolumeSize: 8
+          VolumeType: gp2
+      UserData: !Base64 |
+        #!/bin/bash -ex
+        # No Script execution required as of now
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator-Web-Instance'
+  APIEC2Instance:
+    Type: AWS::EC2::Instance
+    DependsOn: AttachInternetGateway    # If using 'NetworkInterfaces' then it is required to add
+    Properties:
+      KeyName: 'TranslatorKey'
+      ImageId: 'ami-04b9e92b5572fa0d1'
+      InstanceType: 't2.micro'
+      NetworkInterfaces: 
+      - AssociatePublicIpAddress: 'true'
+        DeleteOnTermination: 'true'
+        SubnetId: !Ref SubnetPublicAPI
+        DeviceIndex: '0'
+        GroupSet:
+          - !Ref SecurityGroupAPInstance
+      IamInstanceProfile: 'TranslatorRole'
+      BlockDeviceMappings: 
+      - DeviceName: /dev/xvda
+        Ebs:
+          DeleteOnTermination: 'true'
+          VolumeSize: 8
+          VolumeType: gp2
+      UserData: !Base64 |
+        #!/bin/bash -ex
+        # No Script execution required as of now
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator-API-Instance'
+  DBEC2Instance:
+    Type: AWS::EC2::Instance
+    DependsOn: RoutePrivateSubnetToNATInstance    # If using 'NetworkInterfaces' then it is required to add
+    Properties:
+      KeyName: 'TranslatorKey'
+      ImageId: 'ami-04b9e92b5572fa0d1'
+      InstanceType: 't2.micro'
+      NetworkInterfaces: 
+      - AssociatePublicIpAddress: 'false'
+        DeleteOnTermination: 'true'
+        SubnetId: !Ref SubnetPrivateDB
+        DeviceIndex: '0'
+        GroupSet:
+          - !Ref SecurityGroupDBInstance
+      IamInstanceProfile: 'TranslatorRole'
+      BlockDeviceMappings: 
+      - DeviceName: /dev/xvda
+        Ebs:
+          DeleteOnTermination: 'true'
+          VolumeSize: 8
+          VolumeType: gp2
+      UserData: !Base64 |
+        #!/bin/bash -ex
+        # No Script execution required as of now
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator-DB-Instance'
+  NATEC2Instance:
+    Type: AWS::EC2::Instance
+    DependsOn: AttachInternetGateway    # If using 'NetworkInterfaces' then it is required to add
+    Properties:
+      KeyName: 'TranslatorKey'
+      ImageId: 'ami-02cb555e324696ced'
+      InstanceType: 't2.micro'
+      SourceDestCheck: 'false'
+      NetworkInterfaces: 
+      - AssociatePublicIpAddress: 'true'
+        DeleteOnTermination: 'true'
+        SubnetId: !Ref SubnetPublicWeb
+        DeviceIndex: '0'
+        GroupSet:
+          - !Ref SecurityGroupNATInstance
+      IamInstanceProfile: 'TranslatorRole'
+      BlockDeviceMappings: 
+      - DeviceName: /dev/xvda
+        Ebs:
+          DeleteOnTermination: 'true'
+          VolumeSize: 8
+          VolumeType: gp2
+      UserData: !Base64 |
+        #!/bin/bash -ex
+        # No Script execution required as of now
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator-NAT-Instance'
+Outputs:
+  WebInstancePublicDNS:
+    Value: 
+      Fn::GetAtt: [WebEC2Instance, PublicDnsName]
+    Description: 'Public DNS Name of WEB (Nginx) Server handling incoming HTTP requests.'
+  WebInstancePublicIP:
+    Value: 
+      Fn::GetAtt: [WebEC2Instance, PublicIp]
+    Description: 'Public IP of WEB (Nginx) Server handling incoming HTTP requests.'
+  APIInstancePublicDNS:
+    Value: 
+      Fn::GetAtt: [APIEC2Instance, PublicDnsName]
+    Description: 'Public DNS Name of API (Gunicorn) Server handling REST API requests.'
+  APIInstancePublicIP:
+    Value: 
+      Fn::GetAtt: [APIEC2Instance, PublicIp]
+    Description: 'Public IP of API (Gunicorn) Server handling REST API requests.'
+  NATInstancePublicDNS:
+    Value: 
+      Fn::GetAtt: [NATEC2Instance, PublicDnsName]
+    Description: 'Public DNS Name of NAT (Bastio Host) Server to connect DB Instance via SSH as user ec2-user.'
+  NATInstancePublicIP:
+    Value: 
+      Fn::GetAtt: [NATEC2Instance, PublicIp]
+    Description: 'Public IP of NAT (Bastio Host) Server to connect DB Instance via SSH as user ec2-user.'
+  DBInstancePublicDNS:
+    Value: 
+      Fn::GetAtt: [DBEC2Instance, PrivateDnsName]
+    Description: 'Private DNS Name of DB (PostgreSQL) Server to connect via SSH from NAT.'
+  DBInstancePublicIP:
+    Value: 
+      Fn::GetAtt: [DBEC2Instance, PrivateIp]
+    Description: 'Private IP of DB (PostgreSQL) Server to connect via SSH from NAT.'
