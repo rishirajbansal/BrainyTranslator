@@ -8,7 +8,7 @@
 #set -x #echo on
 
 # This DNS IP can be changed on server start-up. It will not change on Reboot.
-AWS_DB_INSTANCE_DNS=ip-10-11-3-32.ec2.internal
+AWS_DB_INSTANCE_DNS=ip-10-11-3-220.ec2.internal
 
 CONTAINER_NAME=translator-db
 DB_DOCKERFILE=Dockerfile.db
