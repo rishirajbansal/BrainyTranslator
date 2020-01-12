@@ -33,7 +33,7 @@ mkdir -p deployment
 mkdir -p deployment/docker
 mkdir -p deployment/ci-cd
 cp -r ${WORKSPACE}/Deployment/Translator/Containerization/dev/standalone-aws/. ${WORKSPACE}/deployment/docker
-cp -r ${WORKSPACE}/Deployment/Translator/ci-cd/jenkins/dev-aws/. ${WORKSPACE}/deployment/ci-cd/
+cp -r ${WORKSPACE}/Deployment/Translator/ci-cd/jenkins/dev-aws/multiple-instances/. ${WORKSPACE}/deployment/ci-cd/
 cp -r ${WORKSPACE}/Deployment/Translator/Containerization/.dockerignore ${WORKSPACE}
 rm -rf ${WORKSPACE}/Deployment
 ls ${WORKSPACE}
