@@ -29,3 +29,10 @@ backend/Python/Translator/data/uploads/*
 # Visual Studio Code workspace file
 **/*.code-workspace
 .vscode
+
+
+### Excluding Cloud files ###
+**/terraform.tfvars
+**/terraform.tfstate
+**/terraform.tfstate.backup
+**/.terraform
