@@ -27,7 +27,7 @@ pipeline {
                     find Deployment/Translator -type f -iname "*.sh" -exec chmod u+x {} +
                 '''
 
-                sh "${WORKSPACE}/Deployment/Translator/ci-cd/jenkins/dev-aws/init.dev-aws.sh"
+                sh "${WORKSPACE}/Deployment/Translator/ci-cd/jenkins/dev-aws/multiple-instances/init.dev-aws.sh"
                 sh "ls -all ${WORKSPACE}"
 
                 script {
