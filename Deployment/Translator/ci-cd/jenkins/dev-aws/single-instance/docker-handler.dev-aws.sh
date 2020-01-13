@@ -27,9 +27,13 @@ then
     docker container rm --force ${WEB_CONTAINER_NAME}
     echo "${WEB_CONTAINER_NAME} Removed."
         
-    # Bring compose down:
-    cd translator/deployment/compose
-    docker-compose -f ${DOCKER_COMPOSE_FILE} --log-level ${DOCKER_LOG_LEVEL} down 
+    # Bring compose down (check if it is being run first time):
+    if [[-d "translator/deployment/compose"]]
+    then
+
+        cd translator/deployment/compose
+        docker-compose -f ${DOCKER_COMPOSE_FILE} --log-level ${DOCKER_LOG_LEVEL} down 
+    fi
 
     # Remove unused images
     docker rmi $(docker images -f 'dangling=true' -q) || true
