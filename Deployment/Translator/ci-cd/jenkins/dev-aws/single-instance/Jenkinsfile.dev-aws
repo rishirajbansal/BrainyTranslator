@@ -35,9 +35,8 @@ pipeline {
                     echo "Setting up the env variables..."
 
                      //Set Docker Compose file - ENV variable
-                    env.BASE_PATH =  getEnvVar('AWS_PROJECT_BASE_PATH')
-
                     env.AWS_PROJECT_BASE_PATH =  getEnvVar('AWS_PROJECT_BASE_PATH')
+                    
                     env.AWS_DEFAULT_WORKDIR = getEnvVar('AWS_DEFAULT_WORKDIR')
                     env.DB_CONTAINER_NAME = getEnvVar('DB_CONTAINER_NAME')
                     env.API_CONTAINER_NAME = getEnvVar('API_CONTAINER_NAME')

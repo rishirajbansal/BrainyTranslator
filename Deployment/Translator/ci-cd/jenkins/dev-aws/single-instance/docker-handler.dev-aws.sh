@@ -29,10 +29,8 @@ then
         
     # Bring compose down (check if it is being run first time):
     export BASE_PATH=${BASE_PATH}
-    pwd
     if [ -d "translator" ]
     then
-
         cd translator/deployment/compose
         docker-compose -f ${DOCKER_COMPOSE_FILE} --log-level ${DOCKER_LOG_LEVEL} down 
     fi
