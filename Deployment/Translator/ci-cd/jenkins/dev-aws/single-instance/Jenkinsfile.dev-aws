@@ -14,6 +14,7 @@ pipeline {
         CICD_SCRIPT_LOCATION = "${WORKSPACE}/deployment/ci-cd"
         MANUAL_SCRIPT_EXECUTION_TIMEOUT = 15
         AWS_CONNECT_RETRY_ATTEMPT = 3
+
     }
 
     stages {
@@ -32,6 +33,9 @@ pipeline {
 
                 script {
                     echo "Setting up the env variables..."
+
+                     //Set Docker Compose file - ENV variable
+                    env.BASE_PATH =  getEnvVar('AWS_PROJECT_BASE_PATH')
 
                     env.AWS_DEFAULT_WORKDIR = getEnvVar('AWS_DEFAULT_WORKDIR')
                     env.DB_CONTAINER_NAME = getEnvVar('DB_CONTAINER_NAME')
