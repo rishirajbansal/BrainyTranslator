@@ -1,0 +1,178 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'Translator Application AWS Cloud Infrastructure setup using Single instance based on Docker Compose.
+  1. All Servers - Nginx, Gunicorn (Python), Database (PostgreSQL) will run on different containers inside single instance 
+  '
+# Metadata: 
+
+# Parameters: 
+
+# Mappings: 
+
+# Conditions:
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: '10.11.0.0/16'
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator-SI-VPC'
+  SubnetPublic:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: 'us-east-1a'
+      VpcId: !Ref VPC
+      CidrBlock: '10.11.1.0/24'
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator-SI-Subnet'
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator-SI-IG'
+  AttachInternetGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: 'CF-Translator-SI-SG'
+      GroupDescription: 'SG for EC2 Instance'
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: '0.0.0.0/0'
+          Description: 'HTTP Web Traffic'
+        - IpProtocol: tcp
+          FromPort: '443'
+          ToPort: '443'
+          CidrIp: '0.0.0.0/0'
+          Description: 'HTTPs Web Traffic'
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: '0.0.0.0/0'
+          Description: 'Accessing EC2 Instance via SSH'
+        - IpProtocol: tcp
+          FromPort: '8050'
+          ToPort: '8050'
+          CidrIp: '0.0.0.0/0'
+          Description: 'Allowing Access for API Server'
+        - IpProtocol: tcp
+          FromPort: '8072'
+          ToPort: '8072'
+          CidrIp: '0.0.0.0/0'
+          Description: 'Allowing Access to Web Nginx Server'
+        - IpProtocol: tcp
+          FromPort: '5432'
+          ToPort: '5432'
+          CidrIp: '0.0.0.0/0'
+          Description: 'To allow access from outside to check PostgreSQL server from pgAdmin'
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: '0.0.0.0/0'
+          Description: 'HTTP Web Traffic'
+        - IpProtocol: tcp
+          FromPort: '443'
+          ToPort: '443'
+          CidrIp: '0.0.0.0/0'
+          Description: 'HTTPs Web Traffic'
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator-SI-SG'
+  RouteTablePublicSubnet:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator-SI-PublicSubnet-RT'
+  RoutePublicSubnetToInternetGateway:
+    Type: AWS::EC2::Route
+    DependsOn: AttachInternetGateway
+    Properties:
+      RouteTableId: !Ref RouteTablePublicSubnet
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref InternetGateway
+  RouteTableSubnetAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetPublic
+      RouteTableId: !Ref RouteTablePublicSubnet
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    DependsOn: AttachInternetGateway    # If using 'NetworkInterfaces' then it is required to add
+    Properties:
+      KeyName: 'TranslatorKey'
+      ImageId: 'ami-04b9e92b5572fa0d1'
+      InstanceType: 't2.micro'
+      NetworkInterfaces: 
+      - AssociatePublicIpAddress: 'true'
+        DeleteOnTermination: 'true'
+        SubnetId: !Ref SubnetPublic
+        DeviceIndex: '0'
+        GroupSet:
+          - !Ref SecurityGroup
+      IamInstanceProfile: 'TranslatorRole'
+      BlockDeviceMappings: 
+      - DeviceName: /dev/xvda
+        Ebs:
+          DeleteOnTermination: 'true'
+          VolumeSize: 8
+          VolumeType: gp2
+      UserData: 
+        'Fn::Base64': !Sub |
+          #!/bin/bash -x
+          bash -ex <<-"RUNSCRIPT"
+            sudo apt-get update
+            # Install CloudFormation Helper Scripts
+            echo ">>>>>>>>>>>>>>>>>>>>>>> Installing CloudFormation Helper Scripts >>>>>>>>>>>>>>>>>>>>>>>"
+            sudo apt-get install python-pip -y
+            mkdir -p /opt/aws/bin
+            wget https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
+            pip install --target /opt/aws/bin aws-cfn-bootstrap-latest.tar.gz
+            cd /opt/aws/bin
+            sudo python easy_install.py --script-dir /opt/aws/bin /aws-cfn-bootstrap-latest.tar.gz
+            ln -s /root/aws-cfn-bootstrap-latest/init/ubuntu/cfn-hup /etc/init.d/cfn-hup
+            # Install Docker
+            echo ">>>>>>>>>>>>>>>>>>>>>>> Installing Docker and its depenendcies >>>>>>>>>>>>>>>>>>>>>>>"
+            cd /home/ubuntu
+            sudo apt-get install apt-transport-https ca-certificates curl gnupg-agent software-properties-common -y
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+            sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+            sudo apt-get update
+            sudo apt-get install docker-ce docker-ce-cli -y
+            mkdir $HOME/.docker
+            echo "{}" >  $HOME/.docker/config.json
+            getent group docker || sudo groupadd docker
+            sudo usermod -aG docker ubuntu
+            echo ">>>>>>>>>>>>>>>>>>>>>>> Installing Docker Compse (VesionL 1.24.0) and its depenendcies >>>>>>>>>>>>>>>>>>>>>>>"
+            sudo curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+          RUNSCRIPT
+          # TODO: Commenting this for now as this is not working, its giving an error: pkg_resources.ResolutionError: Script 'scripts/cfn-signal' not found in metadata at '/opt/aws/bin/aws_cfn_bootstrap-1.4.dist-info'
+          #/opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource WebEC2Instance --region ${AWS::Region}
+      Tags:
+        - Key: Name
+          Value: 'CF-Translator-SI-Instance'
+Outputs:
+  InstancePublicDNS:
+    Value: 
+      Fn::GetAtt: [EC2Instance, PublicDnsName]
+    Description: 'Public DNS Name of the Single Instance Server handling incoming HTTP requests.'
+  WebInstancePublicIP:
+    Value: 
+      Fn::GetAtt: [EC2Instance, PublicIp]
+    Description: 'Public IP of the Single Instance Server handling incoming HTTP requests.'
