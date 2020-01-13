@@ -26,7 +26,7 @@ then
     tar -czf translator.tar.gz translator
 
     # Copy Project Artifacts to EC2 instance
-    scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ubuntu@${AWS_EC2_INSTANCE_DNS}:${AWS_EC2_WORKDIR}
+    scp -r -i ${awsPemKey} -o StrictHostKeyChecking=no ${WORKSPACE}/translator.tar.gz ubuntu@${AWS_EC2_INSTANCE_DNS}:${AWS_DEFAULT_WORKDIR}
 
     # Extract project artifacts
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_EC2_INSTANCE_DNS} \

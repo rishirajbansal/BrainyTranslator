@@ -33,7 +33,7 @@ pipeline {
                 script {
                     echo "Setting up the env variables..."
 
-                    env.AWS_EC2_WORKDIR = getEnvVar('AWS_EC2_WORKDIR')
+                    env.AWS_DEFAULT_WORKDIR = getEnvVar('AWS_DEFAULT_WORKDIR')
                     env.DB_CONTAINER_NAME = getEnvVar('DB_CONTAINER_NAME')
                     env.API_CONTAINER_NAME = getEnvVar('API_CONTAINER_NAME')
                     env.WEB_CONTAINER_NAME = getEnvVar('WEB_CONTAINER_NAME')
