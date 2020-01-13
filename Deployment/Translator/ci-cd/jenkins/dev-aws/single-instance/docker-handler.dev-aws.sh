@@ -30,7 +30,7 @@ then
     # Bring compose down (check if it is being run first time):
     export BASE_PATH=${BASE_PATH}
     pwd
-    if [[ -d "translator" ]]
+    if [ -d "translator" ]
     then
 
         cd translator/deployment/compose
