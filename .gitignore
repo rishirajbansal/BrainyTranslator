@@ -36,3 +36,4 @@ backend/Python/Translator/data/uploads/*
 **/terraform.tfstate
 **/terraform.tfstate.backup
 **/.terraform
+**/.terraform.tfstate.*
