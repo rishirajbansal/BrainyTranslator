@@ -17,4 +17,4 @@
 
 # Handle Terraform
 **/*.tf linguist-detectable=true
-**/*.tf linguist-language=hcl
+**/*.tf linguist-language=HCL
