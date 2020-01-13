@@ -9,11 +9,7 @@
 
 # Handle Jenkinsfile
 **/Jenkins* linguist-detectable=true
-**/Jenkins* linguist-language=Jenkinsfile
-
-# Handle Terraform
-**/*setup.yml linguist-detectable=true
-**/*setup.yml linguist-language=CloudFormation
+**/Jenkins* linguist-language=Groovy
 
 # Handle Terraform
 **/*.tf linguist-detectable=true
