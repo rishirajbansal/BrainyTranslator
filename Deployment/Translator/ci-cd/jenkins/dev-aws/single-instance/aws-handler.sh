@@ -17,6 +17,7 @@ then
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_EC2_INSTANCE_DNS} WEB_CONTAINER_NAME=${WEB_CONTAINER_NAME} \
         API_CONTAINER_NAME=${API_CONTAINER_NAME} DB_CONTAINER_NAME=${DB_CONTAINER_NAME} \
         DOCKER_COMPOSE_FILE=${DOCKER_COMPOSE_FILE} DOCKER_LOG_LEVEL=${DOCKER_LOG_LEVEL} \
+         BASE_PATH=${AWS_PROJECT_BASE_PATH} \
         'sh -s' < ${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh cleanup
 
 elif [ "$handler" = "copy-project" ]
@@ -45,6 +46,7 @@ then
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_EC2_INSTANCE_DNS} \
         DOCKER_COMPOSE_FILE=${DOCKER_COMPOSE_FILE} DOCKER_PROJECT_NAME=${DOCKER_PROJECT_NAME} \
         DB_SERVICE_NAME=${DB_SERVICE_NAME} API_SERVICE_NAME=${API_SERVICE_NAME} WEB_SERVICE_NAME=${WEB_SERVICE_NAME} \
+        BASE_PATH=${AWS_PROJECT_BASE_PATH} \
         'sh -s' < ${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh build
 
 elif [ "$handler" = "up" ]
@@ -53,6 +55,7 @@ then
     # EC2 Instance
     ssh -i ${awsPemKey} -o StrictHostKeyChecking=no ubuntu@${AWS_EC2_INSTANCE_DNS} \
         DOCKER_COMPOSE_FILE=${DOCKER_COMPOSE_FILE} DOCKER_LOG_LEVEL=${DOCKER_LOG_LEVEL} \
+         BASE_PATH=${AWS_PROJECT_BASE_PATH} \
         'sh -s' < ${CICD_SCRIPT_LOCATION}/docker-handler.dev-aws.sh up
 
 elif [ "$handler" = "postdeploy" ]

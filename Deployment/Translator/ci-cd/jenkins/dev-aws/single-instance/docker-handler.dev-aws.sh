@@ -28,6 +28,8 @@ then
     echo "${WEB_CONTAINER_NAME} Removed."
         
     # Bring compose down (check if it is being run first time):
+    export BASE_PATH=${BASE_PATH}
+    pwd
     if [[ -d "translator" ]]
     then
 
@@ -43,6 +45,7 @@ then
 elif [ "$handler" = "build" ]
 then
 
+    export BASE_PATH=${BASE_PATH}
     cd translator/deployment/compose
     docker-compose -f ${DOCKER_COMPOSE_FILE} -p ${DOCKER_PROJECT_NAME} build ${DB_SERVICE_NAME}
     docker-compose -f ${DOCKER_COMPOSE_FILE} -p ${DOCKER_PROJECT_NAME} build ${API_SERVICE_NAME}
@@ -51,6 +54,7 @@ then
 elif [ "$handler" = "up" ]
 then
 
+    export BASE_PATH=${BASE_PATH}
     cd translator/deployment/compose
   	docker-compose -f ${DOCKER_COMPOSE_FILE} --log-level ${DOCKER_LOG_LEVEL} up -d
 
