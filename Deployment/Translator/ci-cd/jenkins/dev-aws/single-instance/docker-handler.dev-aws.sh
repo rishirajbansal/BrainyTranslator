@@ -28,7 +28,7 @@ then
     echo "${WEB_CONTAINER_NAME} Removed."
         
     # Bring compose down (check if it is being run first time):
-    if [[-d "translator/deployment/compose"]]
+    if [[ -d "translator/deployment/compose" ]]
     then
 
         cd translator/deployment/compose
