@@ -75,7 +75,7 @@ resource "aws_instance" "nat_instance" {
   user_data_base64                 = base64encode(file("./instances/natInstance_userdata.sh"))
 
   tags = {
-    Name = "TF-TranslatorNAT-Instance"
+    Name = "TF-Translator-NAT-Instance"
   }
 }
 
