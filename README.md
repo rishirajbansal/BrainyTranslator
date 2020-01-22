@@ -6,7 +6,7 @@
   * [Application Workflow Architecture](#Application-Workflow-Architecture)
   * [Multi-Tier Architecture (Including Servers)](#Multi-Tier-Architecture-Including-Servers)
   * [Containerization Architecture](#Containerization-Architecture)
-  * [CI/CD (Jenkins) Pipeline Architecture](#CI/CD-Jenkins-Pipeline-Architecture)
+  * [CI/CD (Jenkins) Pipeline Architecture](#cicd-jenkins-pipeline-architecture
   * [Cloud Infrastructure Architecture](#Cloud-Infrastructure-Architecture)
   * [Consolidated Architecture](#Consolidated-Architecture)
 
@@ -43,5 +43,5 @@ The architecture of the system is based on MVC and SOA design principles.
 ![Application Workflow Architecture](/Documentation/Diagrams/Cloud%20Infrastructure%20Architecture.png)
 
 #### Consolidated Architecture
-
+Following architecture depicts the overall synopsis of all the infrastructure components involved in the application deployment.
 ![Application Workflow Architecture](/Documentation/Diagrams/Consolidated%20Architecture.png)
