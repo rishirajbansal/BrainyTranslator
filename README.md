@@ -3,8 +3,8 @@
 
 1. Overview
 2. Architectural Design
-    * [Application Workflow Architecture](#Application Workflow Architecture)
-    * [Multi-Tier Architecture (Including Servers)](#Multi-Tier Architecture (Including Servers))
+    * [Application Workflow Architecture](#Application-Workflow-Architecture)
+    * [Multi-Tier Architecture (Including Servers)](#Multi-Tier-Architecture-(Including-Servers))
 
 #### Overview
 A text translation application that uses advanced machine learning technologies to provide high-quality translation to translate raw text or unstructured text documents in multiple languages.
