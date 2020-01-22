@@ -1,17 +1,26 @@
 # BrainyTranslator
 ### A Natural Language Based Brainy Translator
 
-1. Overview
-2. Architectural Design
-    * [Application Workflow Architecture](#Application-Workflow-Architecture)
-    * [Multi-Tier Architecture (Including Servers)](#Multi-Tier-Architecture-(Including-Servers))
+1. [Overview](#Overview)
+2. [Architectural Design](#Architectural-Design)
+  * [Application Workflow Architecture](#Application-Workflow-Architecture)
+  * [Multi-Tier Architecture (Including Servers)](#Multi-Tier-Architecture-Including-Servers)
+  * [Containerization Architecture](#Containerization-Architecture)
+  * [CI/CD (Jenkins) Pipeline Architecture](#CI/CD-Jenkins-Pipeline-Architecture)
+  * [Cloud Infrastructure Architecture](#Cloud-Infrastructure-Architecture)
+  * [Consolidated Architecture](#Consolidated-Architecture)
 
-#### Overview
+### Overview
 A text translation application that uses advanced machine learning technologies to provide high-quality translation to translate raw text or unstructured text documents in multiple languages.
 
 It provides translation between a source language (the input language) and a target language (the output language). It uses semantic representation to generate a translation one word at a time.
 
 It’s a great solution in cases where the volume of text is high, speed is critical, and very minor level of translation imperfection is acceptable. 
+
+### Architectural Design
+This section elucidates the overall architectural design of the system with the brief description of the progression flow among the systems and the interfaces involved in the program. 
+
+The architecture of the system is based on MVC and SOA design principles.
 
 #### Application Workflow Architecture
 
