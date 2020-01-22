@@ -46,4 +46,4 @@ The architecture of the system is based on MVC and SOA design principles.
 Following architecture depicts the overall synopsis of all the infrastructure components involved in the application deployment.
 ![Application Workflow Architecture](/Documentation/Diagrams/Consolidated%20Architecture.png)
 
-
+> Read Complete Documentation [Here](/Documentation/Translator%20-%20Technical%20Specification.pdf)
