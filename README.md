@@ -6,7 +6,7 @@
   * [Application Workflow Architecture](#Application-Workflow-Architecture)
   * [Multi-Tier Architecture (Including Servers)](#Multi-Tier-Architecture-Including-Servers)
   * [Containerization Architecture](#Containerization-Architecture)
-  * [CI/CD (Jenkins) Pipeline Architecture](#cicd-jenkins-pipeline-architecture
+  * [CI/CD (Jenkins) Pipeline Architecture](#cicd-jenkins-pipeline-architecture)
   * [Cloud Infrastructure Architecture](#Cloud-Infrastructure-Architecture)
   * [Consolidated Architecture](#Consolidated-Architecture)
 
