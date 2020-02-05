@@ -27,7 +27,7 @@ application = get_wsgi_application()
 # Load application on Start-up
 
 from application.generic.init.initConfigurator import *
-from application.generic.base.exception.exceptionClassifications_delete import *
+from application.generic.base.exception.serviceExceptions import InitException
 import logging
 
 logger = logging.getLogger(__name__)
